@@ -312,6 +312,65 @@ td select { cursor: pointer; appearance: auto; }
 .status-bar .save-status.saving { color: #f5c518; }
 .status-bar .save-status.error { color: #f87171; }
 
+/* ── PAT Modal ── */
+.pat-modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(13,6,25,0.85);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+.pat-modal.show { display: flex; }
+
+.pat-modal-content {
+  background: linear-gradient(165deg, #2d1456 0%, #1a0a2e 100%);
+  border: 1px solid rgba(245,197,24,0.3);
+  border-radius: 16px;
+  padding: 36px;
+  width: 460px;
+  max-width: 90vw;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+}
+.pat-modal-content h3 {
+  color: #f5c518;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.pat-modal-content p {
+  color: rgba(255,255,255,0.5);
+  font-size: 0.8rem;
+  margin-bottom: 18px;
+  line-height: 1.6;
+}
+.pat-modal-content code {
+  background: rgba(245,197,24,0.1);
+  color: #f5c518;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+.pat-modal-content input {
+  width: 100%;
+  padding: 11px 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  font-family: 'Montserrat', sans-serif;
+  margin-bottom: 18px;
+}
+.pat-modal-content input:focus { outline: none; border-color: rgba(245,197,24,0.5); }
+
+.pat-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
 
 .empty-state {
   text-align: center;
@@ -371,6 +430,7 @@ td select { cursor: pointer; appearance: auto; }
     </div>
     <div class="toolbar-right">
       <button class="btn btn-outline" onclick="exportCSV()">Export CSV</button>
+      <button class="btn btn-outline" onclick="showPatModal()">PAT Token</button>
       <button class="btn btn-gold" onclick="addRow()">+ Add Case</button>
     </div>
   </div>
@@ -414,12 +474,24 @@ td select { cursor: pointer; appearance: auto; }
   <div id="saveStatus" class="save-status"></div>
 </div>
 
+<!-- PAT Modal -->
+<div class="pat-modal" id="patModal">
+  <div class="pat-modal-content">
+    <h3>GitHub PAT Token</h3>
+    <p>Enter a fine-grained Personal Access Token with <strong>Contents (Read &amp; Write)</strong> permission on the <code>Taurex-Dealing/bonus-abuse</code> repo. The token is stored in your browser only.</p>
+    <input type="password" id="patInput" placeholder="github_pat_...">
+    <div class="pat-modal-actions">
+      <button class="btn btn-outline" onclick="clearPat()">Clear Token</button>
+      <button class="btn btn-gold" onclick="savePat()">Save</button>
+    </div>
+  </div>
+</div>
 
 <script>
 var REPO_OWNER = 'Taurex-Dealing';
 var REPO_NAME = 'bonus-abuse';
 var DATA_PATH = 'data.json';
-var PAT = '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';
+var PAT_KEY = 'bonus_abuse_pat';
 
 var cases = [];
 var dataSha = null;
@@ -430,6 +502,23 @@ var saveTimer = null;
 var DROPDOWN_FIELDS = ['bonus_tcs','gridsight','abuse_confirmed','withdrawals_blocked','credit_removed','adjusted','funding_release','account_closed'];
 var TEXT_FIELDS = ['date','cu_number','login','name','ib','country','campaign','jira_ticket'];
 
+function getPat() { return localStorage.getItem(PAT_KEY) || ''; }
+
+function showPatModal() { document.getElementById('patModal').classList.add('show'); document.getElementById('patInput').value = getPat(); }
+
+function savePat() {
+  var v = document.getElementById('patInput').value.trim();
+  if (v) localStorage.setItem(PAT_KEY, v);
+  document.getElementById('patModal').classList.remove('show');
+  loadData();
+}
+
+function clearPat() {
+  localStorage.removeItem(PAT_KEY);
+  document.getElementById('patInput').value = '';
+  document.getElementById('patModal').classList.remove('show');
+}
+
 function setStatus(msg, cls) {
   var el = document.getElementById('saveStatus');
   el.textContent = msg;
@@ -437,10 +526,12 @@ function setStatus(msg, cls) {
 }
 
 async function loadData() {
+  var pat = getPat();
+  if (!pat) { showPatModal(); return; }
   try {
     setStatus('Loading...', 'saving');
     var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + DATA_PATH, {
-      headers: { 'Authorization': 'Bearer ' + PAT, 'Accept': 'application/vnd.github.v3+json' }
+      headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github.v3+json' }
     });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     var json = await resp.json();
@@ -459,6 +550,8 @@ async function loadData() {
 }
 
 async function saveData() {
+  var pat = getPat();
+  if (!pat) return;
   try {
     setStatus('Saving...', 'saving');
     var payload = JSON.stringify({ cases: cases }, null, 2);
@@ -466,7 +559,7 @@ async function saveData() {
     var body = { message: 'Update cases', content: encoded, sha: dataSha };
     var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + DATA_PATH, {
       method: 'PUT',
-      headers: { 'Authorization': 'Bearer ' + PAT, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+      headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
     if (!resp.ok) {
@@ -669,6 +762,10 @@ function exportCSV() {
   a.download = 'bonus_abuse_cases_' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
 }
+
+document.getElementById('patModal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('show');
+});
 
 loadData();
 setInterval(loadData, 60000);
