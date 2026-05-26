@@ -1,25 +1,6 @@
 {
   "cases": [
     {
-      "id": "1779791074234",
-      "date": "2026-05-26",
-      "cu_number": "",
-      "login": "",
-      "name": "",
-      "ib": "",
-      "country": "",
-      "campaign": "",
-      "bonus_tcs": "",
-      "gridsight": "",
-      "abuse_confirmed": "",
-      "jira_ticket": "",
-      "withdrawals_blocked": "",
-      "credit_removed": "",
-      "adjusted": "",
-      "funding_release": "",
-      "account_closed": ""
-    },
-    {
       "id": "1779784079895",
       "date": "2026-05-26",
       "cu_number": "",
