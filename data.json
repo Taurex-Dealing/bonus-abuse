@@ -16,7 +16,7 @@
       "withdrawals_blocked": "YES",
       "credit_removed": "",
       "adjusted": "NO",
-      "funding_release": "",
+      "funding_release": "NO",
       "account_closed": ""
     },
     {
