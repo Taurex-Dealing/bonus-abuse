@@ -10,7 +10,7 @@
       "country": "Tanzania",
       "campaign": "FTD 50%",
       "bonus_tcs": "",
-      "gridsight": "",
+      "gridsight": "YES",
       "abuse_confirmed": "",
       "jira_ticket": "123456",
       "withdrawals_blocked": "",
