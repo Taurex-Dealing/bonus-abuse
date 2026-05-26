@@ -1,23 +1,6 @@
 {
   "cases": [
     {
-      "id": "1779769753917",
-      "date": "2026-05-26",
-      "cu_number": "",
-      "login": "",
-      "name": "",
-      "ib": "",
-      "country": "",
-      "campaign": "",
-      "gridsight": "",
-      "jira_ticket": "",
-      "withdrawals_blocked": "",
-      "credit_removed": "",
-      "adjusted": "",
-      "funding_release": "",
-      "account_closed": ""
-    },
-    {
       "id": "1748275200000",
       "date": "",
       "cu_number": "",
