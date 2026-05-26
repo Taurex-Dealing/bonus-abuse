@@ -10,7 +10,7 @@
       "country": "",
       "campaign": "FTD 50%",
       "bonus_tcs": "YES",
-      "gridsight": "",
+      "gridsight": "YES",
       "abuse_confirmed": "",
       "jira_ticket": "",
       "withdrawals_blocked": "",
