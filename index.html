@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Taurex — Bonus Abuse Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: 'Montserrat', 'Segoe UI', system-ui, sans-serif;
+  background: linear-gradient(165deg, #2d1456 0%, #1a0a2e 35%, #0d0619 100%);
+  color: #e2e8f0;
+  min-height: 100vh;
+  position: relative;
+  overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed;
+  top: -20%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 900px;
+  height: 650px;
+  background: radial-gradient(ellipse, rgba(100,40,180,0.18) 0%, transparent 70%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* ── Brand bar ── */
+.brand-bar {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 22px 28px 18px;
+  position: relative;
+  z-index: 1;
+}
+.brand-bar::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 28px;
+  right: 28px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(245,197,24,0.35), transparent);
+}
+.logo svg { height: 42px; }
+.brand-title {
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+}
+
+/* ── Page heading ── */
+.page-heading {
+  text-align: center;
+  margin: 26px 0 20px;
+  position: relative;
+  z-index: 1;
+}
+.page-heading .eyebrow {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #f5c518;
+  margin-bottom: 8px;
+}
+.page-heading h1 {
+  font-size: 1.85rem;
+  font-weight: 700;
+  color: #fff;
+  margin-bottom: 6px;
+  letter-spacing: -0.01em;
+}
+.page-heading .subtitle {
+  font-size: 0.92rem;
+  color: rgba(255,255,255,0.55);
+  font-weight: 400;
+}
+.gold-line {
+  width: 64px;
+  height: 3px;
+  background: linear-gradient(90deg, #f5c518, #e8a500);
+  border-radius: 2px;
+  margin: 14px auto 0;
+}
+
+/* ── Wrap ── */
+.wrap {
+  max-width: 1600px;
+  margin: 0 auto;
+  padding: 0 28px 80px;
+  position: relative;
+  z-index: 1;
+}
+
+/* ── Toolbar ── */
+.toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 20px;
+  padding: 14px 20px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  backdrop-filter: blur(8px);
+}
+
+.toolbar-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.search-box {
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  padding: 9px 14px;
+  color: #e2e8f0;
+  font-size: 0.82rem;
+  font-family: 'Montserrat', sans-serif;
+  width: 300px;
+  transition: border-color 0.2s;
+}
+.search-box::placeholder { color: rgba(255,255,255,0.3); }
+.search-box:focus { outline: none; border-color: rgba(245,197,24,0.5); }
+
+.btn {
+  padding: 9px 18px;
+  border: none;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  font-family: 'Montserrat', sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.02em;
+}
+
+.btn-gold {
+  background: linear-gradient(135deg, #f5c518, #e8a500);
+  color: #1a0a2e;
+}
+.btn-gold:hover { background: linear-gradient(135deg, #ffd644, #f5c518); transform: translateY(-1px); }
+
+.btn-outline {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.6);
+}
+.btn-outline:hover { border-color: rgba(245,197,24,0.5); color: #f5c518; }
+
+.btn-danger {
+  background: rgba(248,113,113,0.15);
+  border: 1px solid rgba(248,113,113,0.3);
+  color: #f87171;
+  padding: 5px 10px;
+  font-size: 0.7rem;
+}
+.btn-danger:hover { background: rgba(248,113,113,0.25); }
+
+/* ── Stats ── */
+.stats {
+  display: flex;
+  gap: 20px;
+  font-size: 0.78rem;
+  color: rgba(255,255,255,0.45);
+  font-weight: 500;
+}
+.stats span { color: #f5c518; font-weight: 700; }
+
+/* ── Table ── */
+.table-panel {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  overflow: hidden;
+  backdrop-filter: blur(8px);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 1500px;
+}
+
+thead th {
+  background: rgba(255,255,255,0.05);
+  color: #f5c518;
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  padding: 12px 10px;
+  border-bottom: 1px solid rgba(245,197,24,0.25);
+  text-align: left;
+  white-space: nowrap;
+  cursor: pointer;
+  user-select: none;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+thead th:hover { color: #fff; }
+thead th .sort-arrow { font-size: 9px; margin-left: 3px; opacity: 0.4; }
+thead th.sorted .sort-arrow { opacity: 1; color: #f5c518; }
+
+tbody tr {
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  transition: background 0.15s;
+}
+tbody tr:hover { background: rgba(255,255,255,0.04); }
+
+tbody td {
+  padding: 9px 10px;
+  font-size: 0.8rem;
+  position: relative;
+  font-weight: 500;
+}
+
+tbody td.editable { cursor: pointer; border-radius: 4px; }
+tbody td.editable:hover { background: rgba(245,197,24,0.06); }
+
+td input, td select {
+  background: rgba(13,6,25,0.9);
+  border: 1px solid rgba(245,197,24,0.5);
+  border-radius: 6px;
+  color: #e2e8f0;
+  padding: 5px 8px;
+  font-size: 0.8rem;
+  width: 100%;
+  font-family: 'Montserrat', sans-serif;
+}
+td input:focus, td select:focus { outline: none; box-shadow: 0 0 0 2px rgba(245,197,24,0.2); }
+td select { cursor: pointer; appearance: auto; }
+
+.pill {
+  display: inline-block;
+  padding: 3px 12px;
+  border-radius: 6px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+.pill-yes {
+  background: rgba(74,222,128,0.12);
+  color: #4ade80;
+  border: 1px solid rgba(74,222,128,0.25);
+}
+.pill-no {
+  background: rgba(248,113,113,0.12);
+  color: #f87171;
+  border: 1px solid rgba(248,113,113,0.25);
+}
+.pill-empty { color: rgba(255,255,255,0.2); font-size: 0.75rem; }
+
+.row-num {
+  color: rgba(255,255,255,0.25);
+  font-size: 0.7rem;
+  text-align: center;
+  width: 36px;
+  font-weight: 600;
+}
+
+.actions-cell {
+  width: 44px;
+  text-align: center;
+}
+
+/* ── Status bar ── */
+.status-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: rgba(13,6,25,0.95);
+  border-top: 1px solid rgba(255,255,255,0.06);
+  padding: 8px 28px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.7rem;
+  color: rgba(255,255,255,0.3);
+  z-index: 100;
+  backdrop-filter: blur(10px);
+  font-weight: 500;
+}
+.status-bar .save-status { color: #4ade80; }
+.status-bar .save-status.saving { color: #f5c518; }
+.status-bar .save-status.error { color: #f87171; }
+
+/* ── PAT Modal ── */
+.pat-modal {
+  display: none;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(13,6,25,0.85);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(6px);
+}
+.pat-modal.show { display: flex; }
+
+.pat-modal-content {
+  background: linear-gradient(165deg, #2d1456 0%, #1a0a2e 100%);
+  border: 1px solid rgba(245,197,24,0.3);
+  border-radius: 16px;
+  padding: 36px;
+  width: 460px;
+  max-width: 90vw;
+  box-shadow: 0 24px 80px rgba(0,0,0,0.5);
+}
+.pat-modal-content h3 {
+  color: #f5c518;
+  margin-bottom: 12px;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+.pat-modal-content p {
+  color: rgba(255,255,255,0.5);
+  font-size: 0.8rem;
+  margin-bottom: 18px;
+  line-height: 1.6;
+}
+.pat-modal-content code {
+  background: rgba(245,197,24,0.1);
+  color: #f5c518;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+.pat-modal-content input {
+  width: 100%;
+  padding: 11px 14px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 8px;
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  font-family: 'Montserrat', sans-serif;
+  margin-bottom: 18px;
+}
+.pat-modal-content input:focus { outline: none; border-color: rgba(245,197,24,0.5); }
+
+.pat-modal-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: rgba(255,255,255,0.3);
+}
+.empty-state p { font-size: 0.95rem; margin-bottom: 18px; font-weight: 500; }
+
+@media (max-width: 768px) {
+  .brand-bar { padding: 16px; }
+  .wrap { padding: 0 16px 80px; }
+  .search-box { width: 100%; }
+  .toolbar { flex-direction: column; align-items: stretch; }
+  .toolbar-right { justify-content: flex-end; }
+}
+</style>
+</head>
+<body>
+
+<!-- Brand bar -->
+<div class="brand-bar">
+  <div class="logo">
+    <svg viewBox="0 0 210 44" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" style="stop-color:#ffffff;stop-opacity:1"/>
+          <stop offset="100%" style="stop-color:#e2e8f0;stop-opacity:1"/>
+        </linearGradient>
+      </defs>
+      <text x="0" y="34" font-family="Montserrat, sans-serif" font-weight="800" font-size="36" fill="url(#logoGrad)" letter-spacing="-0.5">taurex</text>
+      <circle cx="195" cy="8" r="5" fill="#f5c518"/>
+    </svg>
+  </div>
+  <div class="brand-title">Dealing & Funding · Shared Tracker</div>
+</div>
+
+<!-- Page heading -->
+<div class="page-heading">
+  <div class="eyebrow">Case Management</div>
+  <h1>Bonus Abuse Tracker</h1>
+  <div class="subtitle">Live shared log — click any cell to edit</div>
+  <div class="gold-line"></div>
+</div>
+
+<div class="wrap">
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <input type="text" class="search-box" id="searchBox" placeholder="Search by name, CU, login, country, campaign..." oninput="filterTable()">
+      <div class="stats">
+        Total: <span id="statTotal">0</span> &nbsp;|&nbsp;
+        Credit Removed: <span id="statCredit">0</span> &nbsp;|&nbsp;
+        Closed: <span id="statClosed">0</span>
+      </div>
+    </div>
+    <div class="toolbar-right">
+      <button class="btn btn-outline" onclick="exportCSV()">Export CSV</button>
+      <button class="btn btn-outline" onclick="showPatModal()">PAT Token</button>
+      <button class="btn btn-gold" onclick="addRow()">+ Add Case</button>
+    </div>
+  </div>
+
+  <!-- Table -->
+  <div class="table-panel">
+    <div class="table-wrap">
+      <table id="caseTable">
+        <thead>
+          <tr>
+            <th class="row-num">#</th>
+            <th data-col="date" onclick="sortTable('date')">Date <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="cu_number" onclick="sortTable('cu_number')">CU Number <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="login" onclick="sortTable('login')">Login <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="name" onclick="sortTable('name')">Name <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="ib" onclick="sortTable('ib')">IB <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="country" onclick="sortTable('country')">Country <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="campaign" onclick="sortTable('campaign')">Campaign <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="gridsight" onclick="sortTable('gridsight')">Gridsight <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="jira_ticket" onclick="sortTable('jira_ticket')">Jira Ticket <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="withdrawals_blocked" onclick="sortTable('withdrawals_blocked')">W/D Blocked <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="credit_removed" onclick="sortTable('credit_removed')">Credit Removed <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="adjusted" onclick="sortTable('adjusted')">Adjusted <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="funding_release" onclick="sortTable('funding_release')">Funding Release <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="account_closed" onclick="sortTable('account_closed')">Acct Closed <span class="sort-arrow">&#9650;</span></th>
+            <th class="actions-cell"></th>
+          </tr>
+        </thead>
+        <tbody id="caseBody"></tbody>
+      </table>
+    </div>
+  </div>
+
+</div>
+
+<!-- Status bar -->
+<div class="status-bar">
+  <div>Bonus Abuse Tracker v1.0</div>
+  <div id="saveStatus" class="save-status"></div>
+</div>
+
+<!-- PAT Modal -->
+<div class="pat-modal" id="patModal">
+  <div class="pat-modal-content">
+    <h3>GitHub PAT Token</h3>
+    <p>Enter a fine-grained Personal Access Token with <strong>Contents (Read &amp; Write)</strong> permission on the <code>Taurex-Dealing/bonus-abuse</code> repo. The token is stored in your browser only.</p>
+    <input type="password" id="patInput" placeholder="github_pat_...">
+    <div class="pat-modal-actions">
+      <button class="btn btn-outline" onclick="clearPat()">Clear Token</button>
+      <button class="btn btn-gold" onclick="savePat()">Save</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var REPO_OWNER = 'Taurex-Dealing';
+var REPO_NAME = 'bonus-abuse';
+var DATA_PATH = 'data.json';
+var PAT_KEY = 'bonus_abuse_pat';
+
+var cases = [];
+var dataSha = null;
+var sortCol = null;
+var sortAsc = true;
+var saveTimer = null;
+
+function getPat() { return localStorage.getItem(PAT_KEY) || ''; }
+
+function showPatModal() { document.getElementById('patModal').classList.add('show'); document.getElementById('patInput').value = getPat(); }
+
+function savePat() {
+  var v = document.getElementById('patInput').value.trim();
+  if (v) localStorage.setItem(PAT_KEY, v);
+  document.getElementById('patModal').classList.remove('show');
+  loadData();
+}
+
+function clearPat() {
+  localStorage.removeItem(PAT_KEY);
+  document.getElementById('patInput').value = '';
+  document.getElementById('patModal').classList.remove('show');
+}
+
+function setStatus(msg, cls) {
+  var el = document.getElementById('saveStatus');
+  el.textContent = msg;
+  el.className = 'save-status' + (cls ? ' ' + cls : '');
+}
+
+async function loadData() {
+  var pat = getPat();
+  if (!pat) { showPatModal(); return; }
+  try {
+    setStatus('Loading...', 'saving');
+    var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + DATA_PATH, {
+      headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    var json = await resp.json();
+    dataSha = json.sha;
+    var content = JSON.parse(atob(json.content));
+    cases = content.cases || [];
+    renderTable();
+    setStatus('Loaded ' + cases.length + ' cases', '');
+  } catch(e) {
+    setStatus('Load failed: ' + e.message, 'error');
+  }
+}
+
+async function saveData() {
+  var pat = getPat();
+  if (!pat) return;
+  try {
+    setStatus('Saving...', 'saving');
+    var payload = JSON.stringify({ cases: cases }, null, 2);
+    var encoded = btoa(unescape(encodeURIComponent(payload)));
+    var body = { message: 'Update cases', content: encoded, sha: dataSha };
+    var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + DATA_PATH, {
+      method: 'PUT',
+      headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+    if (!resp.ok) {
+      var err = await resp.json();
+      throw new Error(err.message || 'HTTP ' + resp.status);
+    }
+    var result = await resp.json();
+    dataSha = result.content.sha;
+    setStatus('Saved at ' + new Date().toLocaleTimeString(), '');
+  } catch(e) {
+    setStatus('Save failed: ' + e.message, 'error');
+    if (e.message && e.message.indexOf('409') > -1) {
+      setStatus('Conflict — someone else edited. Reloading...', 'error');
+      setTimeout(loadData, 1500);
+    }
+  }
+}
+
+function scheduleSave() {
+  if (saveTimer) clearTimeout(saveTimer);
+  saveTimer = setTimeout(saveData, 800);
+}
+
+function addRow() {
+  cases.unshift({
+    id: String(Date.now()),
+    date: new Date().toISOString().slice(0, 10),
+    cu_number: '',
+    login: '',
+    name: '',
+    ib: '',
+    country: '',
+    campaign: '',
+    gridsight: '',
+    jira_ticket: '',
+    withdrawals_blocked: '',
+    credit_removed: '',
+    adjusted: '',
+    funding_release: '',
+    account_closed: ''
+  });
+  renderTable();
+  scheduleSave();
+}
+
+function deleteRow(id) {
+  if (!confirm('Delete this case?')) return;
+  cases = cases.filter(function(c) { return c.id !== id; });
+  renderTable();
+  scheduleSave();
+}
+
+function renderPill(val) {
+  if (!val) return '<span class="pill pill-empty">—</span>';
+  if (val.toUpperCase() === 'YES') return '<span class="pill pill-yes">YES</span>';
+  if (val.toUpperCase() === 'NO') return '<span class="pill pill-no">NO</span>';
+  return val;
+}
+
+function escapeHtml(s) {
+  if (s == null) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+function renderTable() {
+  var tbody = document.getElementById('caseBody');
+  var search = (document.getElementById('searchBox').value || '').toLowerCase();
+  var filtered = cases;
+
+  if (search) {
+    filtered = cases.filter(function(c) {
+      return (c.name||'').toLowerCase().indexOf(search) > -1 ||
+             (c.cu_number||'').toLowerCase().indexOf(search) > -1 ||
+             (c.login||'').toLowerCase().indexOf(search) > -1 ||
+             (c.country||'').toLowerCase().indexOf(search) > -1 ||
+             (c.ib||'').toLowerCase().indexOf(search) > -1 ||
+             (c.campaign||'').toLowerCase().indexOf(search) > -1 ||
+             (c.jira_ticket||'').toLowerCase().indexOf(search) > -1;
+    });
+  }
+
+  if (filtered.length === 0) {
+    tbody.innerHTML = '<tr><td colspan="16"><div class="empty-state"><p>No cases found</p><button class="btn btn-gold" onclick="addRow()">+ Add First Case</button></div></td></tr>';
+  } else {
+    var html = '';
+    for (var i = 0; i < filtered.length; i++) {
+      var c = filtered[i];
+      html += '<tr data-id="' + c.id + '">';
+      html += '<td class="row-num">' + (i + 1) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'date\',\'date\')">' + escapeHtml(c.date) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'cu_number\',\'text\')">' + escapeHtml(c.cu_number) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'login\',\'text\')">' + escapeHtml(c.login) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'name\',\'text\')">' + escapeHtml(c.name) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'ib\',\'text\')">' + escapeHtml(c.ib) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'country\',\'text\')">' + escapeHtml(c.country) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'campaign\',\'text\')">' + escapeHtml(c.campaign) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'gridsight\',\'dropdown\')">' + renderPill(c.gridsight) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'jira_ticket\',\'text\')">' + escapeHtml(c.jira_ticket) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'withdrawals_blocked\',\'dropdown\')">' + renderPill(c.withdrawals_blocked) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'credit_removed\',\'dropdown\')">' + renderPill(c.credit_removed) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'adjusted\',\'dropdown\')">' + renderPill(c.adjusted) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'funding_release\',\'dropdown\')">' + renderPill(c.funding_release) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'account_closed\',\'dropdown\')">' + renderPill(c.account_closed) + '</td>';
+      html += '<td class="actions-cell"><button class="btn btn-danger" onclick="deleteRow(\'' + c.id + '\')">✕</button></td>';
+      html += '</tr>';
+    }
+    tbody.innerHTML = html;
+  }
+  updateStats();
+}
+
+function updateStats() {
+  document.getElementById('statTotal').textContent = cases.length;
+  document.getElementById('statCredit').textContent = cases.filter(function(c) { return (c.credit_removed||'').toUpperCase() === 'YES'; }).length;
+  document.getElementById('statClosed').textContent = cases.filter(function(c) { return (c.account_closed||'').toUpperCase() === 'YES'; }).length;
+}
+
+function editCell(td, id, field, type) {
+  if (td.querySelector('input') || td.querySelector('select')) return;
+  var c = cases.find(function(x) { return x.id === id; });
+  if (!c) return;
+  var val = c[field] || '';
+
+  if (type === 'dropdown') {
+    var sel = document.createElement('select');
+    ['', 'YES', 'NO'].forEach(function(opt) {
+      var o = document.createElement('option');
+      o.value = opt;
+      o.textContent = opt || '—';
+      if (opt.toUpperCase() === val.toUpperCase()) o.selected = true;
+      sel.appendChild(o);
+    });
+    td.innerHTML = '';
+    td.appendChild(sel);
+    sel.focus();
+    function commitSelect() {
+      c[field] = sel.value;
+      td.innerHTML = renderPill(c[field]);
+      updateStats();
+      scheduleSave();
+    }
+    sel.addEventListener('change', commitSelect);
+    sel.addEventListener('blur', commitSelect);
+  } else {
+    var inp = document.createElement('input');
+    inp.type = type === 'date' ? 'date' : 'text';
+    inp.value = val;
+    td.innerHTML = '';
+    td.appendChild(inp);
+    inp.focus();
+    inp.select();
+    function commitInput() {
+      c[field] = inp.value.trim();
+      td.textContent = c[field];
+      scheduleSave();
+    }
+    inp.addEventListener('blur', commitInput);
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') inp.blur();
+      if (e.key === 'Escape') td.textContent = val;
+    });
+  }
+}
+
+function sortTable(col) {
+  if (sortCol === col) { sortAsc = !sortAsc; } else { sortCol = col; sortAsc = true; }
+  document.querySelectorAll('thead th').forEach(function(th) { th.classList.remove('sorted'); });
+  var th = document.querySelector('thead th[data-col="' + col + '"]');
+  if (th) { th.classList.add('sorted'); th.querySelector('.sort-arrow').innerHTML = sortAsc ? '&#9650;' : '&#9660;'; }
+  cases.sort(function(a, b) {
+    var va = (a[col] || '').toString().toLowerCase();
+    var vb = (b[col] || '').toString().toLowerCase();
+    if (va < vb) return sortAsc ? -1 : 1;
+    if (va > vb) return sortAsc ? 1 : -1;
+    return 0;
+  });
+  renderTable();
+}
+
+function filterTable() { renderTable(); }
+
+function exportCSV() {
+  var headers = ['Date','CU Number','Login','Name','IB','Country','Campaign','Gridsight Detection','Jira Ticket','Withdrawals Blocked','Credit Removed','Adjusted','Funding Release','Account Closed'];
+  var fields = ['date','cu_number','login','name','ib','country','campaign','gridsight','jira_ticket','withdrawals_blocked','credit_removed','adjusted','funding_release','account_closed'];
+  var csv = headers.join(',') + '\n';
+  cases.forEach(function(c) {
+    csv += fields.map(function(f) {
+      var v = (c[f] || '').toString().replace(/"/g, '""');
+      return '"' + v + '"';
+    }).join(',') + '\n';
+  });
+  var blob = new Blob([csv], { type: 'text/csv' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'bonus_abuse_cases_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.click();
+}
+
+document.getElementById('patModal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('show');
+});
+
+loadData();
+setInterval(loadData, 60000);
+</script>
+</body>
+</html>
