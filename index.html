@@ -94,7 +94,7 @@ body::before {
 
 /* ── Wrap ── */
 .wrap {
-  max-width: 1600px;
+  max-width: 100%;
   margin: 0 auto;
   padding: 0 28px 80px;
   position: relative;
@@ -203,7 +203,7 @@ body::before {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1500px;
+  min-width: 1800px;
 }
 
 thead th {
@@ -213,7 +213,7 @@ thead th {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  padding: 12px 10px;
+  padding: 12px 12px;
   border-bottom: 1px solid rgba(245,197,24,0.25);
   text-align: left;
   white-space: nowrap;
@@ -234,10 +234,11 @@ tbody tr {
 tbody tr:hover { background: rgba(255,255,255,0.04); }
 
 tbody td {
-  padding: 9px 10px;
+  padding: 10px 12px;
   font-size: 0.8rem;
   position: relative;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 tbody td.editable { cursor: pointer; border-radius: 4px; }
@@ -422,6 +423,7 @@ td select { cursor: pointer; appearance: auto; }
       <input type="text" class="search-box" id="searchBox" placeholder="Search by name, CU, login, country, campaign..." oninput="filterTable()">
       <div class="stats">
         Total: <span id="statTotal">0</span> &nbsp;|&nbsp;
+        Abuse Confirmed: <span id="statAbuse">0</span> &nbsp;|&nbsp;
         Credit Removed: <span id="statCredit">0</span> &nbsp;|&nbsp;
         Closed: <span id="statClosed">0</span>
       </div>
@@ -447,7 +449,9 @@ td select { cursor: pointer; appearance: auto; }
             <th data-col="ib" onclick="sortTable('ib')">IB <span class="sort-arrow">&#9650;</span></th>
             <th data-col="country" onclick="sortTable('country')">Country <span class="sort-arrow">&#9650;</span></th>
             <th data-col="campaign" onclick="sortTable('campaign')">Campaign <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="gridsight" onclick="sortTable('gridsight')">Gridsight <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="bonus_tcs" onclick="sortTable('bonus_tcs')">Bonus T&amp;C's <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="gridsight" onclick="sortTable('gridsight')">Gridsight Detection <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="abuse_confirmed" onclick="sortTable('abuse_confirmed')">Abuse Confirmed <span class="sort-arrow">&#9650;</span></th>
             <th data-col="jira_ticket" onclick="sortTable('jira_ticket')">Jira Ticket <span class="sort-arrow">&#9650;</span></th>
             <th data-col="withdrawals_blocked" onclick="sortTable('withdrawals_blocked')">W/D Blocked <span class="sort-arrow">&#9650;</span></th>
             <th data-col="credit_removed" onclick="sortTable('credit_removed')">Credit Removed <span class="sort-arrow">&#9650;</span></th>
@@ -495,6 +499,9 @@ var sortCol = null;
 var sortAsc = true;
 var saveTimer = null;
 
+var DROPDOWN_FIELDS = ['bonus_tcs','gridsight','abuse_confirmed','withdrawals_blocked','credit_removed','adjusted','funding_release','account_closed'];
+var TEXT_FIELDS = ['date','cu_number','login','name','ib','country','campaign','jira_ticket'];
+
 function getPat() { return localStorage.getItem(PAT_KEY) || ''; }
 
 function showPatModal() { document.getElementById('patModal').classList.add('show'); document.getElementById('patInput').value = getPat(); }
@@ -530,7 +537,11 @@ async function loadData() {
     var json = await resp.json();
     dataSha = json.sha;
     var content = JSON.parse(atob(json.content));
-    cases = content.cases || [];
+    cases = (content.cases || []).map(function(c) {
+      if (!c.bonus_tcs) c.bonus_tcs = '';
+      if (!c.abuse_confirmed) c.abuse_confirmed = '';
+      return c;
+    });
     renderTable();
     setStatus('Loaded ' + cases.length + ' cases', '');
   } catch(e) {
@@ -582,7 +593,9 @@ function addRow() {
     ib: '',
     country: '',
     campaign: '',
+    bonus_tcs: '',
     gridsight: '',
+    abuse_confirmed: '',
     jira_ticket: '',
     withdrawals_blocked: '',
     credit_removed: '',
@@ -631,7 +644,7 @@ function renderTable() {
   }
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="16"><div class="empty-state"><p>No cases found</p><button class="btn btn-gold" onclick="addRow()">+ Add First Case</button></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="18"><div class="empty-state"><p>No cases found</p><button class="btn btn-gold" onclick="addRow()">+ Add First Case</button></div></td></tr>';
   } else {
     var html = '';
     for (var i = 0; i < filtered.length; i++) {
@@ -645,14 +658,16 @@ function renderTable() {
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'ib\',\'text\')">' + escapeHtml(c.ib) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'country\',\'text\')">' + escapeHtml(c.country) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'campaign\',\'text\')">' + escapeHtml(c.campaign) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'bonus_tcs\',\'dropdown\')">' + renderPill(c.bonus_tcs) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'gridsight\',\'dropdown\')">' + renderPill(c.gridsight) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'abuse_confirmed\',\'dropdown\')">' + renderPill(c.abuse_confirmed) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'jira_ticket\',\'text\')">' + escapeHtml(c.jira_ticket) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'withdrawals_blocked\',\'dropdown\')">' + renderPill(c.withdrawals_blocked) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'credit_removed\',\'dropdown\')">' + renderPill(c.credit_removed) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'adjusted\',\'dropdown\')">' + renderPill(c.adjusted) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'funding_release\',\'dropdown\')">' + renderPill(c.funding_release) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'account_closed\',\'dropdown\')">' + renderPill(c.account_closed) + '</td>';
-      html += '<td class="actions-cell"><button class="btn btn-danger" onclick="deleteRow(\'' + c.id + '\')">✕</button></td>';
+      html += '<td class="actions-cell"><button class="btn btn-danger" onclick="deleteRow(\'' + c.id + '\')">&#10005;</button></td>';
       html += '</tr>';
     }
     tbody.innerHTML = html;
@@ -662,6 +677,7 @@ function renderTable() {
 
 function updateStats() {
   document.getElementById('statTotal').textContent = cases.length;
+  document.getElementById('statAbuse').textContent = cases.filter(function(c) { return (c.abuse_confirmed||'').toUpperCase() === 'YES'; }).length;
   document.getElementById('statCredit').textContent = cases.filter(function(c) { return (c.credit_removed||'').toUpperCase() === 'YES'; }).length;
   document.getElementById('statClosed').textContent = cases.filter(function(c) { return (c.account_closed||'').toUpperCase() === 'YES'; }).length;
 }
@@ -731,8 +747,8 @@ function sortTable(col) {
 function filterTable() { renderTable(); }
 
 function exportCSV() {
-  var headers = ['Date','CU Number','Login','Name','IB','Country','Campaign','Gridsight Detection','Jira Ticket','Withdrawals Blocked','Credit Removed','Adjusted','Funding Release','Account Closed'];
-  var fields = ['date','cu_number','login','name','ib','country','campaign','gridsight','jira_ticket','withdrawals_blocked','credit_removed','adjusted','funding_release','account_closed'];
+  var headers = ['Date','CU Number','Login','Name','IB','Country','Campaign',"Bonus T&C's",'Gridsight Detection','Abuse Confirmed','Jira Ticket','Withdrawals Blocked','Credit Removed','Adjusted','Funding Release','Account Closed'];
+  var fields = ['date','cu_number','login','name','ib','country','campaign','bonus_tcs','gridsight','abuse_confirmed','jira_ticket','withdrawals_blocked','credit_removed','adjusted','funding_release','account_closed'];
   var csv = headers.join(',') + '\n';
   cases.forEach(function(c) {
     csv += fields.map(function(f) {
