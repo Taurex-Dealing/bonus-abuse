@@ -52,7 +52,7 @@
       "abuse_confirmed": "YES",
       "jira_ticket": "19497",
       "withdrawals_blocked": "YES",
-      "credit_removed": "",
+      "credit_removed": "YES",
       "adjusted": "NO",
       "funding_release": "NO",
       "account_closed": ""
