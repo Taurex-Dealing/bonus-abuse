@@ -11,7 +11,7 @@
       "campaign": "FTD 50%",
       "bonus_tcs": "YES",
       "gridsight": "YES",
-      "abuse_confirmed": "",
+      "abuse_confirmed": "YES",
       "jira_ticket": "123456",
       "withdrawals_blocked": "",
       "credit_removed": "",
