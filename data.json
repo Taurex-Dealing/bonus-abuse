@@ -9,7 +9,7 @@
       "ib": "CU80619",
       "country": "Tanzania",
       "campaign": "FTD 50%",
-      "bonus_tcs": "",
+      "bonus_tcs": "YES",
       "gridsight": "YES",
       "abuse_confirmed": "",
       "jira_ticket": "123456",
