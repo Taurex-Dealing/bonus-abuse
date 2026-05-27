@@ -1,25 +1,6 @@
 {
   "cases": [
     {
-      "id": "1779877567701",
-      "date": "2026-05-27",
-      "cu_number": "",
-      "login": "120033477",
-      "name": "JAKKAPHONG THANGPHOO",
-      "ib": "",
-      "country": "Thailand",
-      "campaign": "Bonus Credit",
-      "bonus_tcs": "",
-      "gridsight": "YES",
-      "abuse_confirmed": "",
-      "jira_ticket": "",
-      "withdrawals_blocked": "",
-      "credit_removed": "",
-      "adjusted": "",
-      "funding_release": "",
-      "account_closed": ""
-    },
-    {
       "id": "1748275200000",
       "date": "2026-05-26",
       "cu_number": "",
