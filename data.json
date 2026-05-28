@@ -11,7 +11,7 @@
       "campaign": "Bonus Credit In",
       "bonus_tcs": "",
       "gridsight": "YES",
-      "abuse_confirmed": "",
+      "abuse_confirmed": "YES",
       "jira_ticket": "",
       "withdrawals_blocked": "",
       "credit_removed": "",
