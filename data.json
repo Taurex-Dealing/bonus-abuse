@@ -71,7 +71,7 @@
       "abuse_confirmed": "YES",
       "jira_ticket": "19497",
       "withdrawals_blocked": "YES",
-      "credit_removed": "",
+      "credit_removed": "YES",
       "adjusted": "",
       "funding_release": "",
       "account_closed": ""
