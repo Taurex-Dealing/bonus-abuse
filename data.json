@@ -34,7 +34,7 @@
       "jira_ticket": "19497",
       "withdrawals_blocked": "YES",
       "credit_removed": "YES",
-      "adjusted": "",
+      "adjusted": "YES",
       "funding_release": "",
       "account_closed": ""
     },
