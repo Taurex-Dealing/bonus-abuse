@@ -50,7 +50,7 @@
       "bonus_tcs": "YES",
       "gridsight": "YES",
       "abuse_confirmed": "YES",
-      "jira_ticket": "",
+      "jira_ticket": "DTS-19638",
       "withdrawals_blocked": "YES",
       "credit_removed": "YES",
       "adjusted": "",
