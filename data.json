@@ -32,7 +32,7 @@
       "gridsight": "",
       "abuse_confirmed": "",
       "jira_ticket": "",
-      "withdrawals_blocked": "",
+      "withdrawals_blocked": "YES",
       "credit_removed": "",
       "adjusted": "",
       "funding_release": "",
