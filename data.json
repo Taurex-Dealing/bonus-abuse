@@ -47,7 +47,7 @@
       "ib": "",
       "country": "Thailand",
       "campaign": "Bonus Credit In",
-      "bonus_tcs": "",
+      "bonus_tcs": "YES",
       "gridsight": "YES",
       "abuse_confirmed": "YES",
       "jira_ticket": "19497",
