@@ -539,6 +539,8 @@ var dataSha = null;
 var sortCol = 'date';
 var sortAsc = false;
 var saveTimer = null;
+var dirtyIds = {};    // ids of cases this user has edited/added since last successful save
+var deletedIds = {};  // ids this user has deleted since last successful save
 
 var DROPDOWN_FIELDS = ['bonus_tcs','gridsight','withdrawals_blocked','crm_note','close_only','email_sent','credit_removed','adjusted','funding_release','account_closed'];
 var TEXT_FIELDS = ['date','cu_number','login','name','ib','account_manager','country','campaign','jira_ticket','amount_to_deduct'];
@@ -601,7 +603,7 @@ async function loadData() {
   }
 }
 
-async function saveData() {
+async function saveData(isRetry) {
   var pat = getPat();
   if (!pat) return;
   try {
@@ -614,19 +616,70 @@ async function saveData() {
       headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
+    // 409/422 = stale SHA: someone else saved since we loaded. Merge their changes
+    // with ours and retry once, so neither side's edits are lost.
+    if ((resp.status === 409 || resp.status === 422) && !isRetry) {
+      setStatus('Syncing latest changes...', 'saving');
+      var merged = await reconcile();
+      if (merged) { return saveData(true); }
+      throw new Error('Could not sync — please refresh (Ctrl+Shift+R)');
+    }
+    if (resp.status === 401 || resp.status === 403) {
+      localStorage.removeItem(PAT_KEY);
+      setStatus('Token expired — enter a new one', 'error');
+      showPatModal();
+      return;
+    }
     if (!resp.ok) {
       var err = await resp.json();
       throw new Error(err.message || 'HTTP ' + resp.status);
     }
     var result = await resp.json();
     dataSha = result.content.sha;
+    dirtyIds = {};
+    deletedIds = {};
     setStatus('Saved at ' + new Date().toLocaleTimeString(), '');
   } catch(e) {
     setStatus('Save failed: ' + e.message, 'error');
-    if (e.message && e.message.indexOf('409') > -1) {
-      setStatus('Conflict — someone else edited. Reloading...', 'error');
-      setTimeout(loadData, 1500);
-    }
+  }
+}
+
+// Re-fetch the latest data.json and merge this user's own changes onto it.
+// Remote is the base (keeps other people's edits); this user's edited/added rows
+// (dirtyIds) overlay on top, and this user's deletions (deletedIds) are removed.
+// Returns true if the merge succeeded and dataSha was refreshed.
+async function reconcile() {
+  var pat = getPat();
+  if (!pat) return false;
+  try {
+    var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + DATA_PATH, {
+      headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github.v3+json' }
+    });
+    if (!resp.ok) return false;
+    var json = await resp.json();
+    var remoteCases = (JSON.parse(atob(json.content)).cases) || [];
+    var byId = {};
+    remoteCases.forEach(function(c) { byId[c.id] = c; });
+    // overlay this user's edits/additions (local wins for rows they touched)
+    cases.forEach(function(c) { if (dirtyIds[c.id]) byId[c.id] = c; });
+    // apply this user's deletions
+    Object.keys(deletedIds).forEach(function(id) { delete byId[id]; });
+    // rebuild: remote order first, then this user's brand-new rows not yet on remote
+    var merged = [], seen = {};
+    remoteCases.forEach(function(c) {
+      if (deletedIds[c.id]) return;
+      merged.push(byId[c.id]); seen[c.id] = true;
+    });
+    cases.forEach(function(c) {
+      if (!seen[c.id] && !deletedIds[c.id] && dirtyIds[c.id]) { merged.push(c); seen[c.id] = true; }
+    });
+    cases = merged;
+    dataSha = json.sha;
+    doSort();
+    renderTable();
+    return true;
+  } catch(e) {
+    return false;
   }
 }
 
@@ -636,8 +689,10 @@ function scheduleSave() {
 }
 
 function addRow() {
+  var newId = String(Date.now());
+  dirtyIds[newId] = true;
   cases.unshift({
-    id: String(Date.now()),
+    id: newId,
     date: new Date().toISOString().slice(0, 10),
     cu_number: '',
     login: '',
@@ -665,6 +720,8 @@ function addRow() {
 
 function deleteRow(id) {
   if (!confirm('Delete this case?')) return;
+  deletedIds[id] = true;
+  delete dirtyIds[id];
   cases = cases.filter(function(c) { return c.id !== id; });
   renderTable();
   scheduleSave();
@@ -762,6 +819,7 @@ function editCell(td, id, field, type) {
     sel.focus();
     function commitSelect() {
       c[field] = sel.value;
+      dirtyIds[id] = true;
       td.innerHTML = renderPill(c[field]);
       updateStats();
       scheduleSave();
@@ -779,6 +837,7 @@ function editCell(td, id, field, type) {
     inp.select();
     function commitInput() {
       c[field] = inp.value.trim();
+      dirtyIds[id] = true;
       td.textContent = c[field];
       scheduleSave();
     }
@@ -897,7 +956,13 @@ document.getElementById('patModal').addEventListener('click', function(e) {
 });
 
 loadData();
-setInterval(loadData, 60000);
+// Auto-reload every 60s, but skip while the user has unsaved edits in flight
+// so a refresh never wipes work that hasn't been saved yet.
+setInterval(function() {
+  if (saveTimer) return;
+  if (Object.keys(dirtyIds).length || Object.keys(deletedIds).length) return;
+  loadData();
+}, 60000);
 </script>
 </body>
 </html>
