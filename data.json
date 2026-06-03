@@ -16,7 +16,7 @@
       "withdrawals_blocked": "YES",
       "crm_note": "NO",
       "close_only": "YES",
-      "amount_to_deduct": "",
+      "amount_to_deduct": "136.23",
       "email_sent": "",
       "credit_removed": "",
       "adjusted": "",
