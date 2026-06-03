@@ -203,7 +203,7 @@ body::before {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1800px;
+  min-width: 2100px;
 }
 
 thead th {
@@ -372,6 +372,28 @@ td select { cursor: pointer; appearance: auto; }
   justify-content: flex-end;
 }
 
+/* ── Email template modal ── */
+.email-modal-content {
+  width: 760px;
+  max-width: 92vw;
+}
+#emailTemplate {
+  width: 100%;
+  height: 46vh;
+  min-height: 320px;
+  padding: 14px 16px;
+  background: rgba(13,6,25,0.85);
+  border: 1px solid rgba(255,255,255,0.12);
+  border-radius: 10px;
+  color: #e2e8f0;
+  font-family: 'Segoe UI', system-ui, sans-serif;
+  font-size: 0.8rem;
+  line-height: 1.6;
+  resize: vertical;
+  margin-bottom: 18px;
+}
+#emailTemplate:focus { outline: none; border-color: rgba(245,197,24,0.5); }
+
 .empty-state {
   text-align: center;
   padding: 60px 20px;
@@ -423,13 +445,14 @@ td select { cursor: pointer; appearance: auto; }
       <input type="text" class="search-box" id="searchBox" placeholder="Search by name, CU, login, country, campaign..." oninput="filterTable()">
       <div class="stats">
         Total: <span id="statTotal">0</span> &nbsp;|&nbsp;
-        Abuse Confirmed: <span id="statAbuse">0</span> &nbsp;|&nbsp;
+        Email Sent: <span id="statEmail">0</span> &nbsp;|&nbsp;
         Credit Removed: <span id="statCredit">0</span> &nbsp;|&nbsp;
         Closed: <span id="statClosed">0</span>
       </div>
     </div>
     <div class="toolbar-right">
       <button class="btn btn-outline" onclick="exportCSV()">Export CSV</button>
+      <button class="btn btn-outline" onclick="showEmailModal()">Email Template</button>
       <button class="btn btn-outline" onclick="showPatModal()">PAT Token</button>
       <button class="btn btn-gold" onclick="addRow()">+ Add Case</button>
     </div>
@@ -447,13 +470,15 @@ td select { cursor: pointer; appearance: auto; }
             <th data-col="login" onclick="sortTable('login')">Login <span class="sort-arrow">&#9650;</span></th>
             <th data-col="name" onclick="sortTable('name')">Name <span class="sort-arrow">&#9650;</span></th>
             <th data-col="ib" onclick="sortTable('ib')">IB <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="account_manager" onclick="sortTable('account_manager')">Account Manager <span class="sort-arrow">&#9650;</span></th>
             <th data-col="country" onclick="sortTable('country')">Country <span class="sort-arrow">&#9650;</span></th>
             <th data-col="campaign" onclick="sortTable('campaign')">Campaign <span class="sort-arrow">&#9650;</span></th>
             <th data-col="bonus_tcs" onclick="sortTable('bonus_tcs')">Bonus T&amp;C's <span class="sort-arrow">&#9650;</span></th>
             <th data-col="gridsight" onclick="sortTable('gridsight')">Gridsight Detection <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="abuse_confirmed" onclick="sortTable('abuse_confirmed')">Abuse Confirmed <span class="sort-arrow">&#9650;</span></th>
             <th data-col="jira_ticket" onclick="sortTable('jira_ticket')">Jira Ticket <span class="sort-arrow">&#9650;</span></th>
             <th data-col="withdrawals_blocked" onclick="sortTable('withdrawals_blocked')">W/D Blocked <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="close_only" onclick="sortTable('close_only')">Close Only <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="email_sent" onclick="sortTable('email_sent')">Email Sent <span class="sort-arrow">&#9650;</span></th>
             <th data-col="credit_removed" onclick="sortTable('credit_removed')">Credit Removed <span class="sort-arrow">&#9650;</span></th>
             <th data-col="adjusted" onclick="sortTable('adjusted')">Adjusted <span class="sort-arrow">&#9650;</span></th>
             <th data-col="funding_release" onclick="sortTable('funding_release')">Funding Release <span class="sort-arrow">&#9650;</span></th>
@@ -487,6 +512,20 @@ td select { cursor: pointer; appearance: auto; }
   </div>
 </div>
 
+<!-- Email Template Modal -->
+<div class="pat-modal" id="emailModal">
+  <div class="pat-modal-content email-modal-content">
+    <h3>Bonus Abuse — Standard Email Template</h3>
+    <p>Use this template for any bonus abuse case unless told otherwise. Fill in <code>[NAME]</code> and <code>[INSERT AMOUNT]</code> below, then Copy or Download.</p>
+    <textarea id="emailTemplate" spellcheck="false"></textarea>
+    <div class="pat-modal-actions">
+      <button class="btn btn-outline" onclick="resetEmailTemplate()">Reset</button>
+      <button class="btn btn-outline" onclick="downloadEmailTemplate()">Download .txt</button>
+      <button class="btn btn-gold" onclick="copyEmailTemplate()">Copy to Clipboard</button>
+    </div>
+  </div>
+</div>
+
 <script>
 var REPO_OWNER = 'Taurex-Dealing';
 var REPO_NAME = 'bonus-abuse';
@@ -495,12 +534,12 @@ var PAT_KEY = 'bonus_abuse_pat';
 
 var cases = [];
 var dataSha = null;
-var sortCol = null;
-var sortAsc = true;
+var sortCol = 'date';
+var sortAsc = false;
 var saveTimer = null;
 
-var DROPDOWN_FIELDS = ['bonus_tcs','gridsight','abuse_confirmed','withdrawals_blocked','credit_removed','adjusted','funding_release','account_closed'];
-var TEXT_FIELDS = ['date','cu_number','login','name','ib','country','campaign','jira_ticket'];
+var DROPDOWN_FIELDS = ['bonus_tcs','gridsight','withdrawals_blocked','close_only','email_sent','credit_removed','adjusted','funding_release','account_closed'];
+var TEXT_FIELDS = ['date','cu_number','login','name','ib','account_manager','country','campaign','jira_ticket'];
 
 function getPat() { return localStorage.getItem(PAT_KEY) || ''; }
 
@@ -545,9 +584,12 @@ async function loadData() {
     var content = JSON.parse(atob(json.content));
     cases = (content.cases || []).map(function(c) {
       if (!c.bonus_tcs) c.bonus_tcs = '';
-      if (!c.abuse_confirmed) c.abuse_confirmed = '';
+      if (c.account_manager == null) c.account_manager = '';
+      if (c.close_only == null) c.close_only = '';
+      if (c.email_sent == null) c.email_sent = '';
       return c;
     });
+    doSort();
     renderTable();
     setStatus('Loaded ' + cases.length + ' cases', '');
   } catch(e) {
@@ -597,13 +639,15 @@ function addRow() {
     login: '',
     name: '',
     ib: '',
+    account_manager: '',
     country: '',
     campaign: '',
     bonus_tcs: '',
     gridsight: '',
-    abuse_confirmed: '',
     jira_ticket: '',
     withdrawals_blocked: '',
+    close_only: '',
+    email_sent: '',
     credit_removed: '',
     adjusted: '',
     funding_release: '',
@@ -650,7 +694,7 @@ function renderTable() {
   }
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="18"><div class="empty-state"><p>No cases found</p><button class="btn btn-gold" onclick="addRow()">+ Add First Case</button></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="20"><div class="empty-state"><p>No cases found</p><button class="btn btn-gold" onclick="addRow()">+ Add First Case</button></div></td></tr>';
   } else {
     var html = '';
     for (var i = 0; i < filtered.length; i++) {
@@ -662,13 +706,15 @@ function renderTable() {
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'login\',\'text\')">' + escapeHtml(c.login) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'name\',\'text\')">' + escapeHtml(c.name) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'ib\',\'text\')">' + escapeHtml(c.ib) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'account_manager\',\'text\')">' + escapeHtml(c.account_manager) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'country\',\'text\')">' + escapeHtml(c.country) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'campaign\',\'text\')">' + escapeHtml(c.campaign) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'bonus_tcs\',\'dropdown\')">' + renderPill(c.bonus_tcs) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'gridsight\',\'dropdown\')">' + renderPill(c.gridsight) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'abuse_confirmed\',\'dropdown\')">' + renderPill(c.abuse_confirmed) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'jira_ticket\',\'text\')">' + escapeHtml(c.jira_ticket) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'withdrawals_blocked\',\'dropdown\')">' + renderPill(c.withdrawals_blocked) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'close_only\',\'dropdown\')">' + renderPill(c.close_only) + '</td>';
+      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'email_sent\',\'dropdown\')">' + renderPill(c.email_sent) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'credit_removed\',\'dropdown\')">' + renderPill(c.credit_removed) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'adjusted\',\'dropdown\')">' + renderPill(c.adjusted) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'funding_release\',\'dropdown\')">' + renderPill(c.funding_release) + '</td>';
@@ -683,7 +729,7 @@ function renderTable() {
 
 function updateStats() {
   document.getElementById('statTotal').textContent = cases.length;
-  document.getElementById('statAbuse').textContent = cases.filter(function(c) { return (c.abuse_confirmed||'').toUpperCase() === 'YES'; }).length;
+  document.getElementById('statEmail').textContent = cases.filter(function(c) { return (c.email_sent||'').toUpperCase() === 'YES'; }).length;
   document.getElementById('statCredit').textContent = cases.filter(function(c) { return (c.credit_removed||'').toUpperCase() === 'YES'; }).length;
   document.getElementById('statClosed').textContent = cases.filter(function(c) { return (c.account_closed||'').toUpperCase() === 'YES'; }).length;
 }
@@ -735,26 +781,36 @@ function editCell(td, id, field, type) {
   }
 }
 
-function sortTable(col) {
-  if (sortCol === col) { sortAsc = !sortAsc; } else { sortCol = col; sortAsc = true; }
+function doSort() {
+  if (!sortCol) return;
   document.querySelectorAll('thead th').forEach(function(th) { th.classList.remove('sorted'); });
-  var th = document.querySelector('thead th[data-col="' + col + '"]');
-  if (th) { th.classList.add('sorted'); th.querySelector('.sort-arrow').innerHTML = sortAsc ? '&#9650;' : '&#9660;'; }
+  var th = document.querySelector('thead th[data-col="' + sortCol + '"]');
+  if (th) {
+    th.classList.add('sorted');
+    var arrow = th.querySelector('.sort-arrow');
+    if (arrow) arrow.innerHTML = sortAsc ? '&#9650;' : '&#9660;';
+  }
   cases.sort(function(a, b) {
-    var va = (a[col] || '').toString().toLowerCase();
-    var vb = (b[col] || '').toString().toLowerCase();
+    var va = (a[sortCol] || '').toString().toLowerCase();
+    var vb = (b[sortCol] || '').toString().toLowerCase();
     if (va < vb) return sortAsc ? -1 : 1;
     if (va > vb) return sortAsc ? 1 : -1;
     return 0;
   });
+}
+
+function sortTable(col) {
+  // New column defaults: date sorts newest-first (descending); others ascending.
+  if (sortCol === col) { sortAsc = !sortAsc; } else { sortCol = col; sortAsc = (col === 'date') ? false : true; }
+  doSort();
   renderTable();
 }
 
 function filterTable() { renderTable(); }
 
 function exportCSV() {
-  var headers = ['Date','CU Number','Login','Name','IB','Country','Campaign',"Bonus T&C's",'Gridsight Detection','Abuse Confirmed','Jira Ticket','Withdrawals Blocked','Credit Removed','Adjusted','Funding Release','Account Closed'];
-  var fields = ['date','cu_number','login','name','ib','country','campaign','bonus_tcs','gridsight','abuse_confirmed','jira_ticket','withdrawals_blocked','credit_removed','adjusted','funding_release','account_closed'];
+  var headers = ['Date','CU Number','Login','Name','IB','Account Manager','Country','Campaign',"Bonus T&C's",'Gridsight Detection','Jira Ticket','Withdrawals Blocked','Close Only','Email Sent','Credit Removed','Adjusted','Funding Release','Account Closed'];
+  var fields = ['date','cu_number','login','name','ib','account_manager','country','campaign','bonus_tcs','gridsight','jira_ticket','withdrawals_blocked','close_only','email_sent','credit_removed','adjusted','funding_release','account_closed'];
   var csv = headers.join(',') + '\n';
   cases.forEach(function(c) {
     csv += fields.map(function(f) {
@@ -768,6 +824,64 @@ function exportCSV() {
   a.download = 'bonus_abuse_cases_' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
 }
+
+var EMAIL_TEMPLATE = `Dear [NAME],
+
+We are writing to you from Taurex Global Limited (the "Company") in relation to trading activity in your account with the Company.
+
+Following a comprehensive review conducted by our dealing and risk teams, the Company has determined that your trading activity exhibited patterns consistent with market abuse and prohibited trading practices. Such conduct is expressly prohibited under the Company's Terms and Conditions and its Bonus Program Terms, and is inconsistent with genuine market participation.
+
+In this particular instance, our team has flagged concentrated flow which falls under the definition of illustrative 'Breach Behaviour' in accordance with the terms of the Bonus Program (clause G.2: Breach Behaviours), namely either 'operating single or multiple accounts (including The Company's accounts or between different brokers) for arbitrage' and/or 'trading products that are too concentrated and pose a high risk condition, or where more than 70% of the account's net exposure is concentrated on specific products or maintains a fixed trading direction'.
+
+Moreover or in the absence of such bonus program language specified above, the Company may determine that an Event of Default (as defined in the Company's Terms and Conditions at clause 3) has occurred if either the Company suspects the client has carried out trading which it deems, amongst other things, 'lacks legitimate intent, or is conducted in bad faith' (clause 15(m) of the Company's Terms and Conditions) or for 'any other circumstance where the Company reasonably believes that it is necessary or desirable to take action in accordance with this Clause 15 to protect the Company's best interests and/or the interests of any or all of its clients' (clause 15(n) of the Company's Terms and Conditions).
+
+Pursuant to clause 30 of the Company's Terms and Conditions, and further to the non-exhaustive list of market abuse and/or prohibited trading practices contained therein, the Company also:
+…reserves the right to take appropriate action, including but not limited to Account suspension, termination, correcting, recovering, and/or applying costs to any amounts generated from any form of market abuse, termination of any promotions, and legal proceedings, against any Client found to be engaging in market abuse activities/prohibited trading practices. Upon determining that abuse or prohibited trading practices have or likely to have occurred, we may retroactively claw back profits and deduct investigation costs (up to USD 5,000) from your Account without prior notice. You agree to repay any additional costs within 7 days. You further agree that the Company may deduct the claw back amounts from the balance in your account(s).
+
+The terms of the Company's Bonus Program together with its Terms and Conditions, permit the Company to take action in the event of actual or suspected breach behaviours/ prohibited trading practices. As set out above at clause 30 of the Terms and Conditions, or clause 15.2 of the Terms and Conditions (remedies on an Event of Default), or clauses 23.2 and 23.4 of the Terms and Conditions (rights of set-off), or clauses G.1-3 of the Company's Bonus Program (as applicable), the Company may, amongst other things, deduct any improper profits from your account or suspend/terminate your account with the Company.
+
+On this basis, the Company may immediately and without prior notice, where it reasonably suspects prohibited trading practices and/or Breach Behaviours, take the following action which this communication serves as notice of:
+deducting any improper profits from your account (deriving from the Breach Behaviours/prohibited trading practices described above) which are calculated as [INSERT AMOUNT]; and
+terminating your account with the Company.
+
+These actions are taken with immediate effect. Any funds remaining in your account after the deduction applied above shall be returned to the original funding source in line with our Payments Policy and the "Return to Source" principle. Should additional information be required to process the return, our team will contact you separately.`;
+
+function showEmailModal() {
+  document.getElementById('emailTemplate').value = EMAIL_TEMPLATE;
+  document.getElementById('emailModal').classList.add('show');
+}
+
+function resetEmailTemplate() {
+  document.getElementById('emailTemplate').value = EMAIL_TEMPLATE;
+}
+
+function copyEmailTemplate() {
+  var ta = document.getElementById('emailTemplate');
+  ta.select();
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(ta.value).then(function() {
+      setStatus('Email template copied to clipboard', '');
+    }, function() {
+      document.execCommand('copy');
+      setStatus('Email template copied', '');
+    });
+  } else {
+    document.execCommand('copy');
+    setStatus('Email template copied', '');
+  }
+}
+
+function downloadEmailTemplate() {
+  var blob = new Blob([document.getElementById('emailTemplate').value], { type: 'text/plain' });
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'bonus_abuse_email_template.txt';
+  a.click();
+}
+
+document.getElementById('emailModal').addEventListener('click', function(e) {
+  if (e.target === this) this.classList.remove('show');
+});
 
 document.getElementById('patModal').addEventListener('click', function(e) {
   if (e.target === this) this.classList.remove('show');
