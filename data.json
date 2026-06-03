@@ -32,7 +32,7 @@
       "account_manager": "",
       "country": "Algeria",
       "campaign": "100% FTD",
-      "bonus_tcs": "",
+      "bonus_tcs": "YES",
       "gridsight": "YES",
       "jira_ticket": "",
       "withdrawals_blocked": "",
