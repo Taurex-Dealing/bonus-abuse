@@ -65,7 +65,7 @@
       "funding_release": "",
       "account_closed": "",
       "account_manager": "",
-      "close_only": "",
+      "close_only": "YES",
       "amount_to_deduct": "",
       "email_sent": ""
     },
