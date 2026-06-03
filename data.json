@@ -56,7 +56,7 @@
       "country": "Thailand",
       "campaign": "Bonus",
       "bonus_tcs": "YES",
-      "gridsight": "",
+      "gridsight": "YES",
       "abuse_confirmed": "",
       "jira_ticket": "19638",
       "withdrawals_blocked": "YES",
