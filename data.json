@@ -1,6 +1,29 @@
 {
   "cases": [
     {
+      "id": "1780489077563",
+      "date": "2026-06-03",
+      "cu_number": "",
+      "login": "",
+      "name": "",
+      "ib": "",
+      "account_manager": "",
+      "country": "",
+      "campaign": "",
+      "bonus_tcs": "",
+      "gridsight": "",
+      "jira_ticket": "",
+      "withdrawals_blocked": "",
+      "crm_note": "",
+      "close_only": "",
+      "amount_to_deduct": "",
+      "email_sent": "",
+      "credit_removed": "",
+      "adjusted": "",
+      "funding_release": "",
+      "account_closed": ""
+    },
+    {
       "id": "1780488714682",
       "date": "2026-06-03",
       "cu_number": "",
@@ -20,7 +43,8 @@
       "credit_removed": "",
       "adjusted": "",
       "funding_release": "",
-      "account_closed": ""
+      "account_closed": "",
+      "crm_note": ""
     },
     {
       "id": "1780488586162",
@@ -42,7 +66,8 @@
       "credit_removed": "",
       "adjusted": "",
       "funding_release": "",
-      "account_closed": ""
+      "account_closed": "",
+      "crm_note": ""
     },
     {
       "id": "1780479347617",
