@@ -40,7 +40,7 @@
       "close_only": "YES",
       "amount_to_deduct": "0",
       "email_sent": "",
-      "credit_removed": "",
+      "credit_removed": "YES",
       "adjusted": "",
       "funding_release": "",
       "account_closed": "",
