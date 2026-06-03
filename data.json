@@ -21,7 +21,8 @@
       "account_manager": "",
       "close_only": "",
       "amount_to_deduct": "",
-      "email_sent": ""
+      "email_sent": "",
+      "crm_note": ""
     },
     {
       "id": "1780468743161",
@@ -44,7 +45,8 @@
       "account_manager": "",
       "close_only": "",
       "amount_to_deduct": "",
-      "email_sent": ""
+      "email_sent": "",
+      "crm_note": ""
     },
     {
       "id": "1780390737968",
@@ -67,7 +69,8 @@
       "account_manager": "",
       "close_only": "YES",
       "amount_to_deduct": "2262.55",
-      "email_sent": ""
+      "email_sent": "",
+      "crm_note": ""
     },
     {
       "id": "1780383361787",
@@ -90,7 +93,8 @@
       "account_manager": "Khanittha Chansawang",
       "close_only": "",
       "amount_to_deduct": "",
-      "email_sent": ""
+      "email_sent": "",
+      "crm_note": ""
     },
     {
       "id": "1779948838990",
@@ -113,7 +117,8 @@
       "account_manager": "",
       "close_only": "",
       "amount_to_deduct": "",
-      "email_sent": ""
+      "email_sent": "",
+      "crm_note": ""
     },
     {
       "id": "1779948661604",
@@ -136,7 +141,8 @@
       "account_manager": "",
       "close_only": "",
       "amount_to_deduct": "",
-      "email_sent": ""
+      "email_sent": "",
+      "crm_note": ""
     },
     {
       "id": "1779878198693",
@@ -159,7 +165,8 @@
       "account_manager": "",
       "close_only": "",
       "amount_to_deduct": "",
-      "email_sent": ""
+      "email_sent": "",
+      "crm_note": ""
     },
     {
       "id": "1748275200000",
@@ -182,7 +189,8 @@
       "account_manager": "",
       "close_only": "",
       "amount_to_deduct": "",
-      "email_sent": ""
+      "email_sent": "",
+      "crm_note": ""
     },
     {
       "id": "1779780164185",
@@ -205,7 +213,8 @@
       "account_manager": "",
       "close_only": "",
       "amount_to_deduct": "",
-      "email_sent": ""
+      "email_sent": "",
+      "crm_note": ""
     },
     {
       "id": "1779784079895",
@@ -228,7 +237,8 @@
       "account_manager": "",
       "close_only": "",
       "amount_to_deduct": "",
-      "email_sent": ""
+      "email_sent": "",
+      "crm_note": ""
     },
     {
       "id": "1779780939373",
@@ -251,7 +261,8 @@
       "account_manager": "",
       "close_only": "",
       "amount_to_deduct": "",
-      "email_sent": ""
+      "email_sent": "",
+      "crm_note": ""
     }
   ]
 }
