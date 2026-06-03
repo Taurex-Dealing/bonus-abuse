@@ -137,7 +137,7 @@
       "account_manager": "",
       "close_only": "YES",
       "amount_to_deduct": "2262.55",
-      "email_sent": "",
+      "email_sent": "YES",
       "crm_note": ""
     },
     {
