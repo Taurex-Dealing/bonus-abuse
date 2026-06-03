@@ -132,7 +132,7 @@
       "withdrawals_blocked": "YES",
       "credit_removed": "YES",
       "adjusted": "YES",
-      "funding_release": "",
+      "funding_release": "YES",
       "account_closed": "",
       "account_manager": "",
       "close_only": "YES",
