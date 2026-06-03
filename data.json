@@ -55,7 +55,7 @@
       "ib": "CU125240",
       "country": "Thailand",
       "campaign": "Bonus",
-      "bonus_tcs": "",
+      "bonus_tcs": "YES",
       "gridsight": "",
       "abuse_confirmed": "",
       "jira_ticket": "19638",
