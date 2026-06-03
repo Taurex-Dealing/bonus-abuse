@@ -573,7 +573,7 @@ async function loadData() {
   if (!pat) { showPatModal(); return; }
   try {
     setStatus('Loading...', 'saving');
-    var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + DATA_PATH, {
+    var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + DATA_PATH + '?_=' + Date.now(), {
       headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github.v3+json' }
     });
     if (resp.status === 401 || resp.status === 403) {
@@ -603,44 +603,71 @@ async function loadData() {
   }
 }
 
-async function saveData(isRetry) {
+var saving = false;
+function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
+
+async function saveData() {
   var pat = getPat();
   if (!pat) return;
+  saveTimer = null;                        // the scheduled timer has now fired
+  if (saving) { scheduleSave(); return; }  // a save is already in flight — defer
+  saving = true;
+  var MAX_CONFLICT_RETRIES = 5;
   try {
     setStatus('Saving...', 'saving');
-    var payload = JSON.stringify({ cases: cases }, null, 2);
-    var encoded = btoa(unescape(encodeURIComponent(payload)));
-    var body = { message: 'Update cases', content: encoded, sha: dataSha };
-    var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + DATA_PATH, {
-      method: 'PUT',
-      headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
-      body: JSON.stringify(body)
-    });
-    // 409/422 = stale SHA: someone else saved since we loaded. Merge their changes
-    // with ours and retry once, so neither side's edits are lost.
-    if ((resp.status === 409 || resp.status === 422) && !isRetry) {
-      setStatus('Syncing latest changes...', 'saving');
-      var merged = await reconcile();
-      if (merged) { return saveData(true); }
-      throw new Error('Could not sync — please refresh (Ctrl+Shift+R)');
-    }
-    if (resp.status === 401 || resp.status === 403) {
-      localStorage.removeItem(PAT_KEY);
-      setStatus('Token expired — enter a new one', 'error');
-      showPatModal();
+    var attempt = 0;
+    while (true) {
+      var payload = JSON.stringify({ cases: cases }, null, 2);
+      var encoded = btoa(unescape(encodeURIComponent(payload)));
+      var body = { message: 'Update cases', content: encoded, sha: dataSha };
+      var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + DATA_PATH, {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+      if (resp.status === 401 || resp.status === 403) {
+        localStorage.removeItem(PAT_KEY);
+        setStatus('Token expired — enter a new one', 'error');
+        showPatModal();
+        return;
+      }
+      // 409/422 = stale SHA: someone else saved since we loaded. Merge their
+      // changes with ours, refresh the SHA, and retry. GitHub's Contents reads
+      // are eventually consistent, so a single retry can still see a stale SHA —
+      // loop a few times with backoff before giving up.
+      if (resp.status === 409 || resp.status === 422) {
+        attempt++;
+        if (attempt > MAX_CONFLICT_RETRIES) {
+          // Don't wedge the tab: keep the user's edits and re-arm a later save.
+          setStatus('Busy syncing — will retry shortly…', 'error');
+          scheduleSave();
+          return;
+        }
+        setStatus('Syncing latest changes…', 'saving');
+        var merged = await reconcile();
+        if (!merged) {
+          setStatus('Sync failed — will retry shortly…', 'error');
+          scheduleSave();
+          return;
+        }
+        await sleep(250 * attempt);
+        continue; // retry PUT with fresh SHA + merged cases
+      }
+      if (!resp.ok) {
+        var err = await resp.json();
+        throw new Error(err.message || 'HTTP ' + resp.status);
+      }
+      var result = await resp.json();
+      dataSha = result.content.sha;
+      dirtyIds = {};
+      deletedIds = {};
+      setStatus('Saved at ' + new Date().toLocaleTimeString(), '');
       return;
     }
-    if (!resp.ok) {
-      var err = await resp.json();
-      throw new Error(err.message || 'HTTP ' + resp.status);
-    }
-    var result = await resp.json();
-    dataSha = result.content.sha;
-    dirtyIds = {};
-    deletedIds = {};
-    setStatus('Saved at ' + new Date().toLocaleTimeString(), '');
   } catch(e) {
     setStatus('Save failed: ' + e.message, 'error');
+  } finally {
+    saving = false;
   }
 }
 
@@ -652,7 +679,7 @@ async function reconcile() {
   var pat = getPat();
   if (!pat) return false;
   try {
-    var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + DATA_PATH, {
+    var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + DATA_PATH + '?_=' + Date.now(), {
       headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github.v3+json' }
     });
     if (!resp.ok) return false;
@@ -818,9 +845,10 @@ function editCell(td, id, field, type) {
     td.appendChild(sel);
     sel.focus();
     function commitSelect() {
-      c[field] = sel.value;
-      dirtyIds[id] = true;
-      td.innerHTML = renderPill(c[field]);
+      // Re-find by id: a background reconcile may have replaced the array object.
+      var cur = cases.find(function(x) { return x.id === id; });
+      if (cur) { cur[field] = sel.value; dirtyIds[id] = true; }
+      td.innerHTML = renderPill(sel.value);
       updateStats();
       scheduleSave();
     }
@@ -836,9 +864,11 @@ function editCell(td, id, field, type) {
     inp.focus();
     inp.select();
     function commitInput() {
-      c[field] = inp.value.trim();
-      dirtyIds[id] = true;
-      td.textContent = c[field];
+      // Re-find by id: a background reconcile may have replaced the array object.
+      var cur = cases.find(function(x) { return x.id === id; });
+      var v = inp.value.trim();
+      if (cur) { cur[field] = v; dirtyIds[id] = true; }
+      td.textContent = v;
       scheduleSave();
     }
     inp.addEventListener('blur', commitInput);
