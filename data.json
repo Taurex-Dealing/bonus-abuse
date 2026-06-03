@@ -11,7 +11,7 @@
       "country": "UK",
       "campaign": "FTD 50%",
       "bonus_tcs": "YES",
-      "gridsight": "",
+      "gridsight": "YES",
       "jira_ticket": "",
       "withdrawals_blocked": "",
       "crm_note": "",
