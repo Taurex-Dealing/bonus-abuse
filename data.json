@@ -93,7 +93,7 @@
       "account_manager": "Khanittha Chansawang",
       "close_only": "YES",
       "amount_to_deduct": "523.90",
-      "email_sent": "",
+      "email_sent": "YES",
       "crm_note": ""
     },
     {
