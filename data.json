@@ -57,7 +57,7 @@
       "country": "Morocco",
       "campaign": "100% FTD",
       "bonus_tcs": "YES",
-      "gridsight": "",
+      "gridsight": "NO",
       "jira_ticket": "",
       "withdrawals_blocked": "",
       "crm_note": "",
