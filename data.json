@@ -60,7 +60,7 @@
       "gridsight": "YES",
       "jira_ticket": "",
       "withdrawals_blocked": "YES",
-      "close_only": "",
+      "close_only": "YES",
       "amount_to_deduct": "",
       "email_sent": "",
       "credit_removed": "",
