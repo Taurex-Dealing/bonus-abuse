@@ -38,7 +38,7 @@
       "jira_ticket": "",
       "withdrawals_blocked": "YES",
       "close_only": "YES",
-      "amount_to_deduct": "",
+      "amount_to_deduct": "0",
       "email_sent": "",
       "credit_removed": "",
       "adjusted": "",
