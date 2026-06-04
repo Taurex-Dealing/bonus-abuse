@@ -37,7 +37,7 @@
       "gridsight": "NO",
       "jira_ticket": "",
       "withdrawals_blocked": "YES",
-      "crm_note": "NO",
+      "crm_note": "YES",
       "close_only": "YES",
       "amount_to_deduct": "136.23",
       "email_sent": "",
