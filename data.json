@@ -157,7 +157,7 @@
       "credit_removed": "YES",
       "adjusted": "YES",
       "funding_release": "YES",
-      "account_closed": "",
+      "account_closed": "YES",
       "account_manager": "Khanittha Chansawang",
       "close_only": "YES",
       "amount_to_deduct": "523.90",
