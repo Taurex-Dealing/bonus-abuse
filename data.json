@@ -63,7 +63,7 @@
       "crm_note": "YES",
       "close_only": "YES",
       "amount_to_deduct": "136.23",
-      "email_sent": "",
+      "email_sent": "YES",
       "credit_removed": "YES",
       "adjusted": "",
       "funding_release": "",
