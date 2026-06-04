@@ -1,6 +1,29 @@
 {
   "cases": [
     {
+      "id": "1780579133334",
+      "date": "2026-06-04",
+      "cu_number": "",
+      "login": "",
+      "name": "",
+      "ib": "",
+      "account_manager": "",
+      "country": "",
+      "campaign": "",
+      "bonus_tcs": "",
+      "gridsight": "",
+      "jira_ticket": "",
+      "withdrawals_blocked": "",
+      "crm_note": "",
+      "close_only": "",
+      "amount_to_deduct": "",
+      "email_sent": "",
+      "credit_removed": "",
+      "adjusted": "",
+      "funding_release": "",
+      "account_closed": ""
+    },
+    {
       "id": "1780569900533",
       "date": "2026-06-04",
       "cu_number": "",
