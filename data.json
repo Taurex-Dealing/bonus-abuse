@@ -133,7 +133,7 @@
       "credit_removed": "YES",
       "adjusted": "YES",
       "funding_release": "YES",
-      "account_closed": "",
+      "account_closed": "YES",
       "account_manager": "",
       "close_only": "YES",
       "amount_to_deduct": "2262.55",
