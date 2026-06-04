@@ -85,7 +85,7 @@
       "withdrawals_blocked": "YES",
       "close_only": "YES",
       "amount_to_deduct": "428.11",
-      "email_sent": "YES",
+      "email_sent": "",
       "credit_removed": "YES",
       "adjusted": "",
       "funding_release": "",
