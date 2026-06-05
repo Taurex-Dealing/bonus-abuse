@@ -87,7 +87,7 @@
       "amount_to_deduct": "428.11",
       "email_sent": "YES",
       "credit_removed": "YES",
-      "adjusted": "",
+      "adjusted": "YES",
       "funding_release": "",
       "account_closed": "",
       "crm_note": "YES"
