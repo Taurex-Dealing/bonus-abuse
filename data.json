@@ -107,7 +107,7 @@
       "jira_ticket": "",
       "withdrawals_blocked": "YES",
       "credit_removed": "YES",
-      "adjusted": "",
+      "adjusted": "YES",
       "funding_release": "",
       "account_closed": "",
       "account_manager": "Asmaa Ibrahim Ali",
