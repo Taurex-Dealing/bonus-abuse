@@ -92,6 +92,37 @@ body::before {
   margin: 14px auto 0;
 }
 
+/* ── Tabs ── */
+.tabs {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin: 0 0 22px;
+  position: relative;
+  z-index: 1;
+  flex-wrap: wrap;
+}
+.tab-btn {
+  padding: 11px 26px;
+  border: 1px solid rgba(255,255,255,0.12);
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.55);
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 700;
+  font-size: 0.82rem;
+  letter-spacing: 0.02em;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.tab-btn:hover { color: #f5c518; border-color: rgba(245,197,24,0.4); }
+.tab-btn.active {
+  background: linear-gradient(135deg, #f5c518, #e8a500);
+  color: #1a0a2e;
+  border-color: transparent;
+  box-shadow: 0 6px 18px rgba(245,197,24,0.18);
+}
+
 /* ── Wrap ── */
 .wrap {
   max-width: 100%;
@@ -436,12 +467,18 @@ td select { cursor: pointer; appearance: auto; }
 <!-- Page heading -->
 <div class="page-heading">
   <div class="eyebrow">Case Management</div>
-  <h1>Bonus Abuse Tracker</h1>
+  <h1 id="pageTitle">Bonus Abuse Tracker</h1>
   <div class="subtitle">Live shared log — click any cell to edit</div>
   <div class="gold-line"></div>
 </div>
 
 <div class="wrap">
+
+  <!-- Tab bar -->
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="bonus" onclick="switchTab('bonus')">Bonus Abuse Tracker</button>
+    <button class="tab-btn" data-tab="market" onclick="switchTab('market')">Market Abuse Tracker</button>
+  </div>
 
   <!-- Toolbar -->
   <div class="toolbar">
@@ -450,7 +487,7 @@ td select { cursor: pointer; appearance: auto; }
       <div class="stats">
         Total: <span id="statTotal">0</span> &nbsp;|&nbsp;
         Email Sent: <span id="statEmail">0</span> &nbsp;|&nbsp;
-        Credit Removed: <span id="statCredit">0</span> &nbsp;|&nbsp;
+        <span id="statCreditWrap">Credit Removed: <span id="statCredit">0</span> &nbsp;|&nbsp;</span>
         Closed: <span id="statClosed">0</span>
       </div>
     </div>
@@ -466,29 +503,7 @@ td select { cursor: pointer; appearance: auto; }
   <div class="table-panel">
     <div class="table-wrap">
       <table id="caseTable">
-        <thead>
-          <tr>
-            <th class="row-num">#</th>
-            <th data-col="date" onclick="sortTable('date')">Date <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="cu_number" onclick="sortTable('cu_number')">CU Number <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="login" onclick="sortTable('login')">Login <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="name" onclick="sortTable('name')">Name <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="ib" onclick="sortTable('ib')">IB <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="account_manager" onclick="sortTable('account_manager')">Account Manager <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="country" onclick="sortTable('country')">Country <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="jira_ticket" onclick="sortTable('jira_ticket')">Jira Ticket <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="withdrawals_blocked" onclick="sortTable('withdrawals_blocked')">W/D Blocked <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="crm_note" onclick="sortTable('crm_note')">CRM Note <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="close_only" onclick="sortTable('close_only')">Close Only <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="amount_to_deduct" onclick="sortTable('amount_to_deduct')">Amount to Deduct <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="email_sent" onclick="sortTable('email_sent')">Email Sent <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="credit_removed" onclick="sortTable('credit_removed')">Credit Removed <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="adjusted" onclick="sortTable('adjusted')">Adjusted <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="funding_release" onclick="sortTable('funding_release')">Funds Returned <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="account_closed" onclick="sortTable('account_closed')">Acct Closed <span class="sort-arrow">&#9650;</span></th>
-            <th class="actions-cell"></th>
-          </tr>
-        </thead>
+        <thead id="caseHead"></thead>
         <tbody id="caseBody"></tbody>
       </table>
     </div>
@@ -498,7 +513,7 @@ td select { cursor: pointer; appearance: auto; }
 
 <!-- Status bar -->
 <div class="status-bar">
-  <div>Bonus Abuse Tracker v1.0</div>
+  <div>Taurex Abuse Tracker v1.1</div>
   <div id="saveStatus" class="save-status"></div>
 </div>
 
@@ -518,8 +533,8 @@ td select { cursor: pointer; appearance: auto; }
 <!-- Email Template Modal -->
 <div class="pat-modal" id="emailModal">
   <div class="pat-modal-content email-modal-content">
-    <h3>Bonus Abuse — Standard Email Template</h3>
-    <p>Use this template for any bonus abuse case unless told otherwise. Fill in <code>[NAME]</code> and <code>[INSERT AMOUNT]</code> below, then Copy or Download.</p>
+    <h3 id="emailModalTitle">Bonus Abuse — Standard Email Template</h3>
+    <p id="emailModalSub">Use this template for any bonus abuse case unless told otherwise. Fill in <code>[NAME]</code> and <code>[INSERT AMOUNT]</code> below, then Copy or Download.</p>
     <textarea id="emailTemplate" spellcheck="false"></textarea>
     <div class="pat-modal-actions">
       <button class="btn btn-outline" onclick="resetEmailTemplate()">Reset</button>
@@ -532,19 +547,45 @@ td select { cursor: pointer; appearance: auto; }
 <script>
 var REPO_OWNER = 'Taurex-Dealing';
 var REPO_NAME = 'abuse-tracker';
-var DATA_PATH = 'data.json';
-var PAT_KEY = 'bonus_abuse_pat';
+var PAT_KEY = 'bonus_abuse_pat';   // localStorage key kept stable so users aren't re-prompted
 
-var cases = [];
-var dataSha = null;
-var sortCol = 'date';
-var sortAsc = false;
-var saveTimer = null;
-var dirtyIds = {};    // ids of cases this user has edited/added since last successful save
-var deletedIds = {};  // ids this user has deleted since last successful save
+// ── Column catalogue: single source of truth. Each tracker picks a subset. ──
+var ALL_COLUMNS = [
+  { field:'date',                label:'Date',             type:'date' },
+  { field:'cu_number',           label:'CU Number',        type:'text' },
+  { field:'login',               label:'Login',            type:'text' },
+  { field:'name',                label:'Name',             type:'text' },
+  { field:'ib',                  label:'IB',               type:'text' },
+  { field:'account_manager',     label:'Account Manager',  type:'text' },
+  { field:'country',             label:'Country',          type:'text' },
+  { field:'jira_ticket',         label:'Jira Ticket',      type:'text' },
+  { field:'withdrawals_blocked', label:'W/D Blocked',      type:'dropdown' },
+  { field:'crm_note',            label:'CRM Note',         type:'dropdown' },
+  { field:'close_only',          label:'Close Only',       type:'dropdown' },
+  { field:'amount_to_deduct',    label:'Amount to Deduct', type:'number' },
+  { field:'email_sent',          label:'Email Sent',       type:'dropdown' },
+  { field:'credit_removed',      label:'Credit Removed',   type:'dropdown' },
+  { field:'adjusted',            label:'Adjusted',         type:'dropdown' },
+  { field:'funding_release',     label:'Funds Returned',   type:'dropdown' },
+  { field:'account_closed',      label:'Acct Closed',      type:'dropdown' }
+];
+function colsExcept(ex){ return ALL_COLUMNS.filter(function(c){ return ex.indexOf(c.field) === -1; }); }
 
-var DROPDOWN_FIELDS = ['withdrawals_blocked','crm_note','close_only','email_sent','credit_removed','adjusted','funding_release','account_closed'];
-var TEXT_FIELDS = ['date','cu_number','login','name','ib','account_manager','country','jira_ticket','amount_to_deduct'];
+// ── Trackers: each tab is an independent dataset stored in its own JSON file. ──
+function makeTracker(cfg){
+  return { key:cfg.key, dataPath:cfg.dataPath, label:cfg.label, columns:cfg.columns,
+           emailTemplate:cfg.emailTemplate, csvPrefix:cfg.csvPrefix,
+           cases:[], sha:null, sortCol:'date', sortAsc:false,
+           dirtyIds:{}, deletedIds:{}, saveTimer:null, saving:false, loaded:false };
+}
+var trackers = {
+  // Bonus Abuse = the original tool, all columns. emailTemplate assigned below (after the const).
+  bonus:  makeTracker({ key:'bonus',  dataPath:'data.json',        label:'Bonus Abuse Tracker',  columns:ALL_COLUMNS,                    emailTemplate:'', csvPrefix:'bonus_abuse_cases' }),
+  // Market Abuse = latency / abusive-flow log. Same columns minus Credit Removed; blank email template.
+  market: makeTracker({ key:'market', dataPath:'market_data.json', label:'Market Abuse Tracker', columns:colsExcept(['credit_removed']), emailTemplate:'', csvPrefix:'market_abuse_cases' })
+};
+var activeKey = 'bonus';
+function active(){ return trackers[activeKey]; }
 
 function getPat() { return localStorage.getItem(PAT_KEY) || ''; }
 
@@ -554,7 +595,7 @@ function savePat() {
   var v = document.getElementById('patInput').value.trim();
   if (v) localStorage.setItem(PAT_KEY, v);
   document.getElementById('patModal').classList.remove('show');
-  loadData();
+  loadData(active());
 }
 
 function clearPat() {
@@ -569,12 +610,13 @@ function setStatus(msg, cls) {
   el.className = 'save-status' + (cls ? ' ' + cls : '');
 }
 
-async function loadData() {
+async function loadData(t) {
+  t = t || active();
   var pat = getPat();
   if (!pat) { showPatModal(); return; }
   try {
     setStatus('Loading...', 'saving');
-    var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + DATA_PATH + '?_=' + Date.now(), {
+    var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + t.dataPath + '?_=' + Date.now(), {
       headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github.v3+json' }
     });
     if (resp.status === 401 || resp.status === 403) {
@@ -583,44 +625,52 @@ async function loadData() {
       showPatModal();
       return;
     }
+    if (resp.status === 404) {
+      // Data file doesn't exist yet (brand-new tracker). Treat as empty —
+      // the file is created automatically on this tracker's first save.
+      t.cases = []; t.sha = null; t.loaded = true;
+      if (t === active()) renderTable();
+      setStatus('No cases yet', '');
+      return;
+    }
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     var json = await resp.json();
-    dataSha = json.sha;
+    t.sha = json.sha;
     var content = JSON.parse(atob(json.content));
-    cases = (content.cases || []).map(function(c) {
-      if (c.account_manager == null) c.account_manager = '';
-      if (c.crm_note == null) c.crm_note = '';
-      if (c.close_only == null) c.close_only = '';
-      if (c.amount_to_deduct == null) c.amount_to_deduct = '';
-      if (c.email_sent == null) c.email_sent = '';
+    t.cases = (content.cases || []).map(function(c) {
+      // Ensure every column this tracker shows has a value (without stripping
+      // any other fields that live in the file, e.g. retained legacy columns).
+      t.columns.forEach(function(col) { if (c[col.field] == null) c[col.field] = ''; });
       return c;
     });
-    doSort();
-    renderTable();
-    setStatus('Loaded ' + cases.length + ' cases', '');
+    t.loaded = true;
+    doSort(t);
+    if (t === active()) renderTable();
+    setStatus('Loaded ' + t.cases.length + ' cases', '');
   } catch(e) {
     setStatus('Load failed: ' + e.message, 'error');
   }
 }
 
-var saving = false;
 function sleep(ms) { return new Promise(function(r) { setTimeout(r, ms); }); }
 
-async function saveData() {
+async function saveData(t) {
+  t = t || active();
   var pat = getPat();
   if (!pat) return;
-  saveTimer = null;                        // the scheduled timer has now fired
-  if (saving) { scheduleSave(); return; }  // a save is already in flight — defer
-  saving = true;
+  t.saveTimer = null;                        // the scheduled timer has now fired
+  if (t.saving) { scheduleSave(t); return; }  // a save is already in flight — defer
+  t.saving = true;
   var MAX_CONFLICT_RETRIES = 5;
   try {
     setStatus('Saving...', 'saving');
     var attempt = 0;
     while (true) {
-      var payload = JSON.stringify({ cases: cases }, null, 2);
+      var payload = JSON.stringify({ cases: t.cases }, null, 2);
       var encoded = btoa(unescape(encodeURIComponent(payload)));
-      var body = { message: 'Update cases', content: encoded, sha: dataSha };
-      var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + DATA_PATH, {
+      var body = { message: 'Update ' + t.key + ' cases', content: encoded };
+      if (t.sha) body.sha = t.sha;   // omit sha → GitHub CREATES the file (first save of a new tracker)
+      var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + t.dataPath, {
         method: 'PUT',
         headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github.v3+json', 'Content-Type': 'application/json' },
         body: JSON.stringify(body)
@@ -640,14 +690,14 @@ async function saveData() {
         if (attempt > MAX_CONFLICT_RETRIES) {
           // Don't wedge the tab: keep the user's edits and re-arm a later save.
           setStatus('Busy syncing — will retry shortly…', 'error');
-          scheduleSave();
+          scheduleSave(t);
           return;
         }
         setStatus('Syncing latest changes…', 'saving');
-        var merged = await reconcile();
+        var merged = await reconcile(t);
         if (!merged) {
           setStatus('Sync failed — will retry shortly…', 'error');
-          scheduleSave();
+          scheduleSave(t);
           return;
         }
         await sleep(250 * attempt);
@@ -658,16 +708,16 @@ async function saveData() {
         throw new Error(err.message || 'HTTP ' + resp.status);
       }
       var result = await resp.json();
-      dataSha = result.content.sha;
-      dirtyIds = {};
-      deletedIds = {};
+      t.sha = result.content.sha;
+      t.dirtyIds = {};
+      t.deletedIds = {};
       setStatus('Saved at ' + new Date().toLocaleTimeString(), '');
       return;
     }
   } catch(e) {
     setStatus('Save failed: ' + e.message, 'error');
   } finally {
-    saving = false;
+    t.saving = false;
   }
 }
 
@@ -675,80 +725,90 @@ async function saveData() {
 // Remote is the base (keeps other people's edits); this user's edited/added rows
 // (dirtyIds) overlay on top, and this user's deletions (deletedIds) are removed.
 // Returns true if the merge succeeded and dataSha was refreshed.
-async function reconcile() {
+async function reconcile(t) {
+  t = t || active();
   var pat = getPat();
   if (!pat) return false;
   try {
-    var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + DATA_PATH + '?_=' + Date.now(), {
+    var resp = await fetch('https://api.github.com/repos/' + REPO_OWNER + '/' + REPO_NAME + '/contents/' + t.dataPath + '?_=' + Date.now(), {
       headers: { 'Authorization': 'Bearer ' + pat, 'Accept': 'application/vnd.github.v3+json' }
     });
+    if (resp.status === 404) { t.sha = null; return true; }  // not on remote yet — retry will create it
     if (!resp.ok) return false;
     var json = await resp.json();
     var remoteCases = (JSON.parse(atob(json.content)).cases) || [];
     var byId = {};
     remoteCases.forEach(function(c) { byId[c.id] = c; });
     // overlay this user's edits/additions (local wins for rows they touched)
-    cases.forEach(function(c) { if (dirtyIds[c.id]) byId[c.id] = c; });
+    t.cases.forEach(function(c) { if (t.dirtyIds[c.id]) byId[c.id] = c; });
     // apply this user's deletions
-    Object.keys(deletedIds).forEach(function(id) { delete byId[id]; });
+    Object.keys(t.deletedIds).forEach(function(id) { delete byId[id]; });
     // rebuild: remote order first, then this user's brand-new rows not yet on remote
     var merged = [], seen = {};
     remoteCases.forEach(function(c) {
-      if (deletedIds[c.id]) return;
+      if (t.deletedIds[c.id]) return;
       merged.push(byId[c.id]); seen[c.id] = true;
     });
-    cases.forEach(function(c) {
-      if (!seen[c.id] && !deletedIds[c.id] && dirtyIds[c.id]) { merged.push(c); seen[c.id] = true; }
+    t.cases.forEach(function(c) {
+      if (!seen[c.id] && !t.deletedIds[c.id] && t.dirtyIds[c.id]) { merged.push(c); seen[c.id] = true; }
     });
-    cases = merged;
-    dataSha = json.sha;
-    doSort();
-    renderTable();
+    t.cases = merged;
+    t.sha = json.sha;
+    doSort(t);
+    if (t === active()) renderTable();
     return true;
   } catch(e) {
     return false;
   }
 }
 
-function scheduleSave() {
-  if (saveTimer) clearTimeout(saveTimer);
-  saveTimer = setTimeout(saveData, 800);
+function scheduleSave(t) {
+  t = t || active();
+  if (t.saveTimer) clearTimeout(t.saveTimer);
+  t.saveTimer = setTimeout(function() { saveData(t); }, 800);
+}
+
+// ── Tab switching ──
+function switchTab(key) {
+  if (key === activeKey || !trackers[key]) return;
+  activeKey = key;
+  updateTabUI();
+  document.getElementById('searchBox').value = '';
+  var t = active();
+  var pending = t.saveTimer || Object.keys(t.dirtyIds).length || Object.keys(t.deletedIds).length;
+  if (!t.loaded || !pending) {
+    loadData(t);              // fresh fetch (also renders)
+  } else {
+    doSort(t); renderTable(); // keep this tab's unsaved edits — render cached
+  }
+}
+
+function updateTabUI() {
+  document.querySelectorAll('.tab-btn').forEach(function(b) {
+    b.classList.toggle('active', b.getAttribute('data-tab') === activeKey);
+  });
+  document.getElementById('pageTitle').textContent = active().label;
 }
 
 function addRow() {
+  var t = active();
   var newId = String(Date.now());
-  dirtyIds[newId] = true;
-  cases.unshift({
-    id: newId,
-    date: new Date().toISOString().slice(0, 10),
-    cu_number: '',
-    login: '',
-    name: '',
-    ib: '',
-    account_manager: '',
-    country: '',
-    jira_ticket: '',
-    withdrawals_blocked: '',
-    crm_note: '',
-    close_only: '',
-    amount_to_deduct: '',
-    email_sent: '',
-    credit_removed: '',
-    adjusted: '',
-    funding_release: '',
-    account_closed: ''
-  });
+  t.dirtyIds[newId] = true;
+  var rec = { id: newId };
+  t.columns.forEach(function(col) { rec[col.field] = (col.field === 'date') ? new Date().toISOString().slice(0, 10) : ''; });
+  t.cases.unshift(rec);
   renderTable();
-  scheduleSave();
+  scheduleSave(t);
 }
 
 function deleteRow(id) {
   if (!confirm('Delete this case?')) return;
-  deletedIds[id] = true;
-  delete dirtyIds[id];
-  cases = cases.filter(function(c) { return c.id !== id; });
+  var t = active();
+  t.deletedIds[id] = true;
+  delete t.dirtyIds[id];
+  t.cases = t.cases.filter(function(c) { return c.id !== id; });
   renderTable();
-  scheduleSave();
+  scheduleSave(t);
 }
 
 function renderPill(val) {
@@ -763,13 +823,34 @@ function escapeHtml(s) {
   return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
 }
 
+function renderHead(t) {
+  var h = '<tr><th class="row-num">#</th>';
+  t.columns.forEach(function(col) {
+    h += '<th data-col="' + col.field + '" onclick="sortTable(\'' + col.field + '\')">' + escapeHtml(col.label) + ' <span class="sort-arrow">&#9650;</span></th>';
+  });
+  h += '<th class="actions-cell"></th></tr>';
+  document.getElementById('caseHead').innerHTML = h;
+}
+
+function applySortIndicator(t) {
+  document.querySelectorAll('#caseHead th').forEach(function(th) { th.classList.remove('sorted'); });
+  var th = document.querySelector('#caseHead th[data-col="' + t.sortCol + '"]');
+  if (th) {
+    th.classList.add('sorted');
+    var ar = th.querySelector('.sort-arrow');
+    if (ar) ar.innerHTML = t.sortAsc ? '&#9650;' : '&#9660;';
+  }
+}
+
 function renderTable() {
+  var t = active();
+  renderHead(t);
   var tbody = document.getElementById('caseBody');
   var search = (document.getElementById('searchBox').value || '').toLowerCase();
-  var filtered = cases;
+  var filtered = t.cases;
 
   if (search) {
-    filtered = cases.filter(function(c) {
+    filtered = t.cases.filter(function(c) {
       return (c.name||'').toLowerCase().indexOf(search) > -1 ||
              (c.cu_number||'').toLowerCase().indexOf(search) > -1 ||
              (c.login||'').toLowerCase().indexOf(search) > -1 ||
@@ -780,48 +861,46 @@ function renderTable() {
   }
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="19"><div class="empty-state"><p>No cases found</p><button class="btn btn-gold" onclick="addRow()">+ Add First Case</button></div></td></tr>';
+    var span = t.columns.length + 2;
+    tbody.innerHTML = '<tr><td colspan="' + span + '"><div class="empty-state"><p>No cases found</p><button class="btn btn-gold" onclick="addRow()">+ Add First Case</button></div></td></tr>';
   } else {
     var html = '';
     for (var i = 0; i < filtered.length; i++) {
       var c = filtered[i];
       html += '<tr data-id="' + c.id + '">';
       html += '<td class="row-num">' + (i + 1) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'date\',\'date\')">' + escapeHtml(c.date) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'cu_number\',\'text\')">' + escapeHtml(c.cu_number) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'login\',\'text\')">' + escapeHtml(c.login) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'name\',\'text\')">' + escapeHtml(c.name) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'ib\',\'text\')">' + escapeHtml(c.ib) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'account_manager\',\'text\')">' + escapeHtml(c.account_manager) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'country\',\'text\')">' + escapeHtml(c.country) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'jira_ticket\',\'text\')">' + escapeHtml(c.jira_ticket) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'withdrawals_blocked\',\'dropdown\')">' + renderPill(c.withdrawals_blocked) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'crm_note\',\'dropdown\')">' + renderPill(c.crm_note) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'close_only\',\'dropdown\')">' + renderPill(c.close_only) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'amount_to_deduct\',\'number\')">' + escapeHtml(c.amount_to_deduct) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'email_sent\',\'dropdown\')">' + renderPill(c.email_sent) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'credit_removed\',\'dropdown\')">' + renderPill(c.credit_removed) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'adjusted\',\'dropdown\')">' + renderPill(c.adjusted) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'funding_release\',\'dropdown\')">' + renderPill(c.funding_release) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'account_closed\',\'dropdown\')">' + renderPill(c.account_closed) + '</td>';
+      t.columns.forEach(function(col) {
+        if (col.type === 'dropdown') {
+          html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'' + col.field + '\',\'dropdown\')">' + renderPill(c[col.field]) + '</td>';
+        } else {
+          html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'' + col.field + '\',\'' + col.type + '\')">' + escapeHtml(c[col.field]) + '</td>';
+        }
+      });
       html += '<td class="actions-cell"><button class="btn btn-danger" onclick="deleteRow(\'' + c.id + '\')">&#10005;</button></td>';
       html += '</tr>';
     }
     tbody.innerHTML = html;
   }
+  applySortIndicator(t);
   updateStats();
 }
 
 function updateStats() {
-  document.getElementById('statTotal').textContent = cases.length;
-  document.getElementById('statEmail').textContent = cases.filter(function(c) { return (c.email_sent||'').toUpperCase() === 'YES'; }).length;
-  document.getElementById('statCredit').textContent = cases.filter(function(c) { return (c.credit_removed||'').toUpperCase() === 'YES'; }).length;
-  document.getElementById('statClosed').textContent = cases.filter(function(c) { return (c.account_closed||'').toUpperCase() === 'YES'; }).length;
+  var t = active();
+  document.getElementById('statTotal').textContent = t.cases.length;
+  document.getElementById('statEmail').textContent = t.cases.filter(function(c) { return (c.email_sent||'').toUpperCase() === 'YES'; }).length;
+  var hasCredit = t.columns.some(function(col) { return col.field === 'credit_removed'; });
+  document.getElementById('statCreditWrap').style.display = hasCredit ? '' : 'none';
+  if (hasCredit) {
+    document.getElementById('statCredit').textContent = t.cases.filter(function(c) { return (c.credit_removed||'').toUpperCase() === 'YES'; }).length;
+  }
+  document.getElementById('statClosed').textContent = t.cases.filter(function(c) { return (c.account_closed||'').toUpperCase() === 'YES'; }).length;
 }
 
 function editCell(td, id, field, type) {
   if (td.querySelector('input') || td.querySelector('select')) return;
-  var c = cases.find(function(x) { return x.id === id; });
+  var t = active();
+  var c = t.cases.find(function(x) { return x.id === id; });
   if (!c) return;
   var val = c[field] || '';
 
@@ -839,11 +918,11 @@ function editCell(td, id, field, type) {
     sel.focus();
     function commitSelect() {
       // Re-find by id: a background reconcile may have replaced the array object.
-      var cur = cases.find(function(x) { return x.id === id; });
-      if (cur) { cur[field] = sel.value; dirtyIds[id] = true; }
+      var cur = t.cases.find(function(x) { return x.id === id; });
+      if (cur) { cur[field] = sel.value; t.dirtyIds[id] = true; }
       td.innerHTML = renderPill(sel.value);
       updateStats();
-      scheduleSave();
+      scheduleSave(t);
     }
     sel.addEventListener('change', commitSelect);
     sel.addEventListener('blur', commitSelect);
@@ -858,11 +937,11 @@ function editCell(td, id, field, type) {
     inp.select();
     function commitInput() {
       // Re-find by id: a background reconcile may have replaced the array object.
-      var cur = cases.find(function(x) { return x.id === id; });
+      var cur = t.cases.find(function(x) { return x.id === id; });
       var v = inp.value.trim();
-      if (cur) { cur[field] = v; dirtyIds[id] = true; }
+      if (cur) { cur[field] = v; t.dirtyIds[id] = true; }
       td.textContent = v;
-      scheduleSave();
+      scheduleSave(t);
     }
     inp.addEventListener('blur', commitInput);
     inp.addEventListener('keydown', function(e) {
@@ -872,38 +951,34 @@ function editCell(td, id, field, type) {
   }
 }
 
-function doSort() {
-  if (!sortCol) return;
-  document.querySelectorAll('thead th').forEach(function(th) { th.classList.remove('sorted'); });
-  var th = document.querySelector('thead th[data-col="' + sortCol + '"]');
-  if (th) {
-    th.classList.add('sorted');
-    var arrow = th.querySelector('.sort-arrow');
-    if (arrow) arrow.innerHTML = sortAsc ? '&#9650;' : '&#9660;';
-  }
-  cases.sort(function(a, b) {
-    var va = (a[sortCol] || '').toString().toLowerCase();
-    var vb = (b[sortCol] || '').toString().toLowerCase();
-    if (va < vb) return sortAsc ? -1 : 1;
-    if (va > vb) return sortAsc ? 1 : -1;
+function doSort(t) {
+  t = t || active();
+  if (!t.sortCol) return;
+  t.cases.sort(function(a, b) {
+    var va = (a[t.sortCol] || '').toString().toLowerCase();
+    var vb = (b[t.sortCol] || '').toString().toLowerCase();
+    if (va < vb) return t.sortAsc ? -1 : 1;
+    if (va > vb) return t.sortAsc ? 1 : -1;
     return 0;
   });
 }
 
 function sortTable(col) {
   // New column defaults: date sorts newest-first (descending); others ascending.
-  if (sortCol === col) { sortAsc = !sortAsc; } else { sortCol = col; sortAsc = (col === 'date') ? false : true; }
-  doSort();
+  var t = active();
+  if (t.sortCol === col) { t.sortAsc = !t.sortAsc; } else { t.sortCol = col; t.sortAsc = (col === 'date') ? false : true; }
+  doSort(t);
   renderTable();
 }
 
 function filterTable() { renderTable(); }
 
 function exportCSV() {
-  var headers = ['Date','CU Number','Login','Name','IB','Account Manager','Country','Jira Ticket','Withdrawals Blocked','CRM Note','Close Only','Amount to Deduct','Email Sent','Credit Removed','Adjusted','Funds Returned','Account Closed'];
-  var fields = ['date','cu_number','login','name','ib','account_manager','country','jira_ticket','withdrawals_blocked','crm_note','close_only','amount_to_deduct','email_sent','credit_removed','adjusted','funding_release','account_closed'];
+  var t = active();
+  var headers = t.columns.map(function(c) { return c.label; });
+  var fields = t.columns.map(function(c) { return c.field; });
   var csv = headers.join(',') + '\n';
-  cases.forEach(function(c) {
+  t.cases.forEach(function(c) {
     csv += fields.map(function(f) {
       var v = (c[f] || '').toString().replace(/"/g, '""');
       return '"' + v + '"';
@@ -912,7 +987,7 @@ function exportCSV() {
   var blob = new Blob([csv], { type: 'text/csv' });
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'bonus_abuse_cases_' + new Date().toISOString().slice(0,10) + '.csv';
+  a.download = t.csvPrefix + '_' + new Date().toISOString().slice(0,10) + '.csv';
   a.click();
 }
 
@@ -937,13 +1012,25 @@ terminating your account with the Company.
 
 These actions are taken with immediate effect. Any funds remaining in your account after the deduction applied above shall be returned to the original funding source in line with our Payments Policy and the "Return to Source" principle. Should additional information be required to process the return, our team will contact you separately.`;
 
+// Bonus Abuse tab uses the mandated template above; Market Abuse tab is blank
+// (a dedicated Market Abuse template is still being drafted).
+trackers.bonus.emailTemplate = EMAIL_TEMPLATE;
+
 function showEmailModal() {
-  document.getElementById('emailTemplate').value = EMAIL_TEMPLATE;
+  var t = active();
+  document.getElementById('emailTemplate').value = t.emailTemplate;
+  if (t.key === 'market') {
+    document.getElementById('emailModalTitle').textContent = 'Market Abuse — Email Template';
+    document.getElementById('emailModalSub').innerHTML = 'A dedicated Market Abuse email template is still being prepared, so this is currently blank. You can draft text below, then Copy or Download.';
+  } else {
+    document.getElementById('emailModalTitle').textContent = 'Bonus Abuse — Standard Email Template';
+    document.getElementById('emailModalSub').innerHTML = 'Use this template for any bonus abuse case unless told otherwise. Fill in <code>[NAME]</code> and <code>[INSERT AMOUNT]</code> below, then Copy or Download.';
+  }
   document.getElementById('emailModal').classList.add('show');
 }
 
 function resetEmailTemplate() {
-  document.getElementById('emailTemplate').value = EMAIL_TEMPLATE;
+  document.getElementById('emailTemplate').value = active().emailTemplate;
 }
 
 function copyEmailTemplate() {
@@ -966,7 +1053,7 @@ function downloadEmailTemplate() {
   var blob = new Blob([document.getElementById('emailTemplate').value], { type: 'text/plain' });
   var a = document.createElement('a');
   a.href = URL.createObjectURL(blob);
-  a.download = 'bonus_abuse_email_template.txt';
+  a.download = (active().key === 'market' ? 'market_abuse' : 'bonus_abuse') + '_email_template.txt';
   a.click();
 }
 
@@ -978,13 +1065,15 @@ document.getElementById('patModal').addEventListener('click', function(e) {
   if (e.target === this) this.classList.remove('show');
 });
 
-loadData();
-// Auto-reload every 60s, but skip while the user has unsaved edits in flight
-// so a refresh never wipes work that hasn't been saved yet.
+updateTabUI();
+loadData(active());
+// Auto-reload the visible tab every 60s, but skip while it has unsaved edits in
+// flight so a refresh never wipes work that hasn't been saved yet.
 setInterval(function() {
-  if (saveTimer) return;
-  if (Object.keys(dirtyIds).length || Object.keys(deletedIds).length) return;
-  loadData();
+  var t = active();
+  if (t.saveTimer) return;
+  if (Object.keys(t.dirtyIds).length || Object.keys(t.deletedIds).length) return;
+  loadData(t);
 }, 60000);
 </script>
 </body>
