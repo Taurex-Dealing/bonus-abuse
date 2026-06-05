@@ -19,7 +19,7 @@
       "amount_to_deduct": "123.14",
       "email_sent": "YES",
       "credit_removed": "YES",
-      "adjusted": "",
+      "adjusted": "YES",
       "funding_release": "",
       "account_closed": ""
     },
