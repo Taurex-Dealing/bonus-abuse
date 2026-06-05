@@ -9,7 +9,7 @@
       "ib": "83980",
       "account_manager": "Allan",
       "country": "China",
-      "jira_ticket": "",
+      "jira_ticket": "https://zenfinex.atlassian.net/jira/servicedesk/projects/DTS/queues/custom/66/DTS-19706",
       "withdrawals_blocked": "YES",
       "crm_note": "",
       "close_only": "YES",
