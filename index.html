@@ -203,20 +203,22 @@ body::before {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 2360px;
+  table-layout: fixed;
 }
 
 thead th {
   background: rgba(255,255,255,0.05);
   color: #f5c518;
-  font-size: 0.62rem;
+  font-size: 0.55rem;
   font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.1em;
-  padding: 12px 12px;
+  letter-spacing: 0.04em;
+  padding: 9px 6px;
   border-bottom: 1px solid rgba(245,197,24,0.25);
   text-align: left;
-  white-space: nowrap;
+  white-space: normal;
+  line-height: 1.25;
+  word-break: break-word;
   cursor: pointer;
   user-select: none;
   position: sticky;
@@ -234,11 +236,13 @@ tbody tr {
 tbody tr:hover { background: rgba(255,255,255,0.04); }
 
 tbody td {
-  padding: 10px 12px;
-  font-size: 0.8rem;
+  padding: 8px 6px;
+  font-size: 0.72rem;
   position: relative;
   font-weight: 500;
-  white-space: nowrap;
+  white-space: normal;
+  word-break: break-word;
+  overflow-wrap: anywhere;
 }
 
 tbody td.editable { cursor: pointer; border-radius: 4px; }
@@ -249,8 +253,8 @@ td input, td select {
   border: 1px solid rgba(245,197,24,0.5);
   border-radius: 6px;
   color: #e2e8f0;
-  padding: 5px 8px;
-  font-size: 0.8rem;
+  padding: 4px 5px;
+  font-size: 0.72rem;
   width: 100%;
   font-family: 'Montserrat', sans-serif;
 }
@@ -259,11 +263,11 @@ td select { cursor: pointer; appearance: auto; }
 
 .pill {
   display: inline-block;
-  padding: 3px 12px;
+  padding: 3px 9px;
   border-radius: 6px;
-  font-size: 0.65rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.04em;
 }
 .pill-yes {
   background: rgba(74,222,128,0.12);
@@ -473,8 +477,6 @@ td select { cursor: pointer; appearance: auto; }
             <th data-col="account_manager" onclick="sortTable('account_manager')">Account Manager <span class="sort-arrow">&#9650;</span></th>
             <th data-col="country" onclick="sortTable('country')">Country <span class="sort-arrow">&#9650;</span></th>
             <th data-col="campaign" onclick="sortTable('campaign')">Campaign <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="bonus_tcs" onclick="sortTable('bonus_tcs')">Bonus T&amp;C's <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="gridsight" onclick="sortTable('gridsight')">Gridsight Detection <span class="sort-arrow">&#9650;</span></th>
             <th data-col="jira_ticket" onclick="sortTable('jira_ticket')">Jira Ticket <span class="sort-arrow">&#9650;</span></th>
             <th data-col="withdrawals_blocked" onclick="sortTable('withdrawals_blocked')">W/D Blocked <span class="sort-arrow">&#9650;</span></th>
             <th data-col="crm_note" onclick="sortTable('crm_note')">CRM Note <span class="sort-arrow">&#9650;</span></th>
@@ -483,7 +485,7 @@ td select { cursor: pointer; appearance: auto; }
             <th data-col="email_sent" onclick="sortTable('email_sent')">Email Sent <span class="sort-arrow">&#9650;</span></th>
             <th data-col="credit_removed" onclick="sortTable('credit_removed')">Credit Removed <span class="sort-arrow">&#9650;</span></th>
             <th data-col="adjusted" onclick="sortTable('adjusted')">Adjusted <span class="sort-arrow">&#9650;</span></th>
-            <th data-col="funding_release" onclick="sortTable('funding_release')">Funding Release <span class="sort-arrow">&#9650;</span></th>
+            <th data-col="funding_release" onclick="sortTable('funding_release')">Funds Returned <span class="sort-arrow">&#9650;</span></th>
             <th data-col="account_closed" onclick="sortTable('account_closed')">Acct Closed <span class="sort-arrow">&#9650;</span></th>
             <th class="actions-cell"></th>
           </tr>
@@ -542,7 +544,7 @@ var saveTimer = null;
 var dirtyIds = {};    // ids of cases this user has edited/added since last successful save
 var deletedIds = {};  // ids this user has deleted since last successful save
 
-var DROPDOWN_FIELDS = ['bonus_tcs','gridsight','withdrawals_blocked','crm_note','close_only','email_sent','credit_removed','adjusted','funding_release','account_closed'];
+var DROPDOWN_FIELDS = ['withdrawals_blocked','crm_note','close_only','email_sent','credit_removed','adjusted','funding_release','account_closed'];
 var TEXT_FIELDS = ['date','cu_number','login','name','ib','account_manager','country','campaign','jira_ticket','amount_to_deduct'];
 
 function getPat() { return localStorage.getItem(PAT_KEY) || ''; }
@@ -587,7 +589,6 @@ async function loadData() {
     dataSha = json.sha;
     var content = JSON.parse(atob(json.content));
     cases = (content.cases || []).map(function(c) {
-      if (!c.bonus_tcs) c.bonus_tcs = '';
       if (c.account_manager == null) c.account_manager = '';
       if (c.crm_note == null) c.crm_note = '';
       if (c.close_only == null) c.close_only = '';
@@ -728,8 +729,6 @@ function addRow() {
     account_manager: '',
     country: '',
     campaign: '',
-    bonus_tcs: '',
-    gridsight: '',
     jira_ticket: '',
     withdrawals_blocked: '',
     crm_note: '',
@@ -784,7 +783,7 @@ function renderTable() {
   }
 
   if (filtered.length === 0) {
-    tbody.innerHTML = '<tr><td colspan="22"><div class="empty-state"><p>No cases found</p><button class="btn btn-gold" onclick="addRow()">+ Add First Case</button></div></td></tr>';
+    tbody.innerHTML = '<tr><td colspan="20"><div class="empty-state"><p>No cases found</p><button class="btn btn-gold" onclick="addRow()">+ Add First Case</button></div></td></tr>';
   } else {
     var html = '';
     for (var i = 0; i < filtered.length; i++) {
@@ -799,8 +798,6 @@ function renderTable() {
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'account_manager\',\'text\')">' + escapeHtml(c.account_manager) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'country\',\'text\')">' + escapeHtml(c.country) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'campaign\',\'text\')">' + escapeHtml(c.campaign) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'bonus_tcs\',\'dropdown\')">' + renderPill(c.bonus_tcs) + '</td>';
-      html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'gridsight\',\'dropdown\')">' + renderPill(c.gridsight) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'jira_ticket\',\'text\')">' + escapeHtml(c.jira_ticket) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'withdrawals_blocked\',\'dropdown\')">' + renderPill(c.withdrawals_blocked) + '</td>';
       html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'crm_note\',\'dropdown\')">' + renderPill(c.crm_note) + '</td>';
@@ -907,8 +904,8 @@ function sortTable(col) {
 function filterTable() { renderTable(); }
 
 function exportCSV() {
-  var headers = ['Date','CU Number','Login','Name','IB','Account Manager','Country','Campaign',"Bonus T&C's",'Gridsight Detection','Jira Ticket','Withdrawals Blocked','CRM Note','Close Only','Amount to Deduct','Email Sent','Credit Removed','Adjusted','Funding Release','Account Closed'];
-  var fields = ['date','cu_number','login','name','ib','account_manager','country','campaign','bonus_tcs','gridsight','jira_ticket','withdrawals_blocked','crm_note','close_only','amount_to_deduct','email_sent','credit_removed','adjusted','funding_release','account_closed'];
+  var headers = ['Date','CU Number','Login','Name','IB','Account Manager','Country','Campaign','Jira Ticket','Withdrawals Blocked','CRM Note','Close Only','Amount to Deduct','Email Sent','Credit Removed','Adjusted','Funds Returned','Account Closed'];
+  var fields = ['date','cu_number','login','name','ib','account_manager','country','campaign','jira_ticket','withdrawals_blocked','crm_note','close_only','amount_to_deduct','email_sent','credit_removed','adjusted','funding_release','account_closed'];
   var csv = headers.join(',') + '\n';
   cases.forEach(function(c) {
     csv += fields.map(function(f) {
