@@ -11,7 +11,7 @@
       "country": "China",
       "jira_ticket": "",
       "withdrawals_blocked": "YES",
-      "crm_note": "",
+      "crm_note": "YES",
       "close_only": "",
       "amount_to_deduct": "13851",
       "email_sent": "",
