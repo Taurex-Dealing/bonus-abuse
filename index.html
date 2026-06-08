@@ -856,13 +856,15 @@ async function pushToJira(id) {
     return;
   }
   var payload = Object.assign({ tracker: t.key, tracker_label: t.label }, c);
+  // Send as application/x-www-form-urlencoded (a CORS "simple" request) so the
+  // browser SKIPS the preflight OPTIONS the Zapier hook doesn't answer — that
+  // preflight is what caused "Failed to fetch". Zapier still parses each key into
+  // its own field, with the same field names as the original JSON test.
+  var form = new URLSearchParams();
+  Object.keys(payload).forEach(function(k) { form.append(k, payload[k] == null ? '' : payload[k]); });
   try {
     setStatus('Sending to Jira…', 'saving');
-    var resp = await fetch(ZAPIER_HOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload)
-    });
+    var resp = await fetch(ZAPIER_HOOK_URL, { method: 'POST', body: form });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     setStatus('Sent to Jira: ' + who, '');
   } catch(e) {
