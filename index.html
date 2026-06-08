@@ -585,6 +585,7 @@ var ALL_COLUMNS = [
   { field:'account_manager',     label:'Account Manager',  type:'text' },
   { field:'country',             label:'Country',          type:'text' },
   { field:'jira_ticket',         label:'Jira Ticket',      type:'text' },
+  { field:'jira_push',           label:'Push to Jira',     type:'action' },
   { field:'withdrawals_blocked', label:'W/D Blocked',      type:'dropdown' },
   { field:'crm_note',            label:'CRM Note',         type:'dropdown' },
   { field:'close_only',          label:'Close Only',       type:'dropdown' },
@@ -666,7 +667,7 @@ async function loadData(t) {
     t.cases = (content.cases || []).map(function(c) {
       // Ensure every column this tracker shows has a value (without stripping
       // any other fields that live in the file, e.g. retained legacy columns).
-      t.columns.forEach(function(col) { if (c[col.field] == null) c[col.field] = ''; });
+      t.columns.forEach(function(col) { if (col.type !== 'action' && c[col.field] == null) c[col.field] = ''; });
       return c;
     });
     t.loaded = true;
@@ -823,7 +824,7 @@ function addRow() {
   var newId = String(Date.now());
   t.dirtyIds[newId] = true;
   var rec = { id: newId };
-  t.columns.forEach(function(col) { rec[col.field] = (col.field === 'date') ? new Date().toISOString().slice(0, 10) : ''; });
+  t.columns.forEach(function(col) { if (col.type === 'action') return; rec[col.field] = (col.field === 'date') ? new Date().toISOString().slice(0, 10) : ''; });
   t.cases.unshift(rec);
   renderTable();
   scheduleSave(t);
@@ -884,7 +885,11 @@ function escapeHtml(s) {
 function renderHead(t) {
   var h = '<tr><th class="row-num">#</th>';
   t.columns.forEach(function(col) {
-    h += '<th data-col="' + col.field + '" onclick="sortTable(\'' + col.field + '\')">' + escapeHtml(col.label) + ' <span class="sort-arrow">&#9650;</span></th>';
+    if (col.type === 'action') {
+      h += '<th data-col="' + col.field + '">' + escapeHtml(col.label) + '</th>';
+    } else {
+      h += '<th data-col="' + col.field + '" onclick="sortTable(\'' + col.field + '\')">' + escapeHtml(col.label) + ' <span class="sort-arrow">&#9650;</span></th>';
+    }
   });
   h += '<th class="actions-cell"></th></tr>';
   document.getElementById('caseHead').innerHTML = h;
@@ -928,15 +933,9 @@ function renderTable() {
       html += '<tr data-id="' + c.id + '">';
       html += '<td class="row-num">' + (i + 1) + '</td>';
       t.columns.forEach(function(col) {
-        if (col.field === 'jira_ticket') {
-          // Jira Ticket cell = editable value (paste the key back here) + a gold
-          // "Push to Jira" button that fires the row at the Zapier hook. The value
-          // span is the edit target, so editing never wipes the button (sibling).
-          var jv = c.jira_ticket ? escapeHtml(c.jira_ticket) : '<span class="pill-empty">&mdash;</span>';
-          html += '<td class="jira-cell">'
-                + '<span class="jira-val" onclick="editCell(this,\'' + c.id + '\',\'jira_ticket\',\'text\')">' + jv + '</span>'
-                + '<button class="btn btn-jira" title="Send this case to Jira" onclick="pushToJira(\'' + c.id + '\')">Push to Jira</button>'
-                + '</td>';
+        if (col.type === 'action') {
+          // Dedicated "Push to Jira" column — gold button fires the whole row at the Zapier hook.
+          html += '<td class="jira-cell"><button class="btn btn-jira" title="Send this case to Jira" onclick="pushToJira(\'' + c.id + '\')">Push to Jira</button></td>';
         } else if (col.type === 'dropdown') {
           html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'' + col.field + '\',\'dropdown\')">' + renderPill(c[col.field]) + '</td>';
         } else {
@@ -1042,8 +1041,9 @@ function filterTable() { renderTable(); }
 
 function exportCSV() {
   var t = active();
-  var headers = t.columns.map(function(c) { return c.label; });
-  var fields = t.columns.map(function(c) { return c.field; });
+  var dataCols = t.columns.filter(function(c) { return c.type !== 'action'; });
+  var headers = dataCols.map(function(c) { return c.label; });
+  var fields = dataCols.map(function(c) { return c.field; });
   var csv = headers.join(',') + '\n';
   t.cases.forEach(function(c) {
     csv += fields.map(function(f) {
