@@ -1081,16 +1081,60 @@ terminating your account with the Company.
 
 These actions are taken with immediate effect. Any funds remaining in your account after the deduction applied above shall be returned to the original funding source in line with our Payments Policy and the "Return to Source" principle. Should additional information be required to process the return, our team will contact you separately.`;
 
-// Bonus Abuse tab uses the mandated template above; Market Abuse tab is blank
-// (a dedicated Market Abuse template is still being drafted).
+// Market Abuse tab — mandated "Notice of Account Action" letter (loaded 2026-06-08
+// from "Notice of Account Action - 5Jun26 - CLEAN"). Placeholders: [CLIENT NAME],
+// [ACCOUNT NUMBER], [INSERT AMOUNT], [NAME]; pick one option in the [ ... ] action line.
+var MARKET_EMAIL_TEMPLATE = `Subject: Notice of Account Action – Prohibited Trading Practices and Profit Retention
+
+Dear [CLIENT NAME],
+Account no: [ACCOUNT NUMBER]
+
+We are writing to you from Taurex Global Limited, the "Company", in relation to trading activity on your account.
+
+Following a review conducted by our Risk, Dealing and Compliance teams, the Company has identified trading activity that it considers to be inconsistent with normal market participation and to fall within the scope of prohibited trading practices under the Company's Terms and Conditions.
+
+The activity identified includes trading patterns, execution characteristics, order behaviour, market timing, post-execution price movements, use of automated trading systems and/or profit outcomes which the Company considers to be inconsistent with genuine market participation. The Company's decision is not based on any single factor in isolation, but on the overall pattern of activity identified on the account.
+
+The Company considers that the trading activity falls within the scope of the following clauses of its Terms and Conditions:
+
+Clause 15.1(m), including trading which is deemed excessive, lacks legitimate intent, is conducted in bad faith, seeks to profit from minimal or no risk, exploits price latency, arbitrage opportunities or inefficient pricing mechanisms, or is conducted during abnormal, volatile or illiquid market conditions.
+
+Clause 15.1(n), including where the Company reasonably believes that action is necessary or desirable to protect the Company's best interests and/or the interests of any or all of its clients.
+
+Clause 22.9 of the Terms and Conditions in relation to latency arbitrage, price-feed errors, internet connectivity delays and prices displayed on the trading platform or liquidity connection not accurately reflecting market rates. The Company does not permit trading activity that takes advantage of such conditions and reserves the right to revoke, correct or adjust affected transactions.
+
+Clause 29.2(f), including circumstances where the Company reasonably suspects or determines that a Client has used, is using, or has attempted to use any VPN, VPS, proxy, device, software or technology to conceal, obscure or falsify their identity, location or IP address, including to operate multiple accounts under different names using the same VPS IP or setup, abuse promotions, or carry out prohibited trading practices.
+
+Clause 30.1(g), which prohibits the use of Expert Advisors, or EAs, to exploit platform vulnerabilities.
+
+The Company relies on its rights under Clauses 15.2 and 30.2, respectively, in relation to the activities enumerated above and the consequences deriving therefrom, including: (i) its right to block an account, terminate the Agreement, refuse withdrawals and take any actions deemed necessary where an Event of Default has occurred or where the Company considers the account to be involved in suspicious activity, and (ii) the right to take appropriate action where market abuse or prohibited trading practices have occurred or are likely to have occurred, including but not limited to account suspension, termination, correction, recovery, clawback of profits, deduction of investigation costs and/or legal proceedings.
+
+Accordingly, the Company has taken the following action, which this communication serves as notice of:
+
+retaining and/or deducting improper profits from your account deriving from the prohibited trading practices described above, calculated as [INSERT AMOUNT]; and
+
+[terminating your account with the Company / continuing to restrict your account / cancelling any pending withdrawal request / returning any remaining eligible balance to the original funding source].
+
+These actions are taken with immediate effect.
+
+Any funds remaining in your account after the deduction or retention applied above shall be handled in accordance with the Company's Terms and Conditions, Payments Policy and the "Return to Source" principle. Should additional information be required to process any return of funds, our team will contact you separately.
+
+The Company reserves all rights under the Terms and Conditions and applicable law.
+
+Yours sincerely,
+[NAME]`;
+
+// Bonus Abuse tab uses the mandated bonus template; Market Abuse tab uses the
+// Notice of Account Action letter above.
 trackers.bonus.emailTemplate = EMAIL_TEMPLATE;
+trackers.market.emailTemplate = MARKET_EMAIL_TEMPLATE;
 
 function showEmailModal() {
   var t = active();
   document.getElementById('emailTemplate').value = t.emailTemplate;
   if (t.key === 'market') {
-    document.getElementById('emailModalTitle').textContent = 'Market Abuse — Email Template';
-    document.getElementById('emailModalSub').innerHTML = 'A dedicated Market Abuse email template is still being prepared, so this is currently blank. You can draft text below, then Copy or Download.';
+    document.getElementById('emailModalTitle').textContent = 'Market Abuse — Notice of Account Action';
+    document.getElementById('emailModalSub').innerHTML = 'Standard Market Abuse / prohibited-trading notice. Fill in <code>[CLIENT NAME]</code>, <code>[ACCOUNT NUMBER]</code>, <code>[INSERT AMOUNT]</code> and <code>[NAME]</code>, choose the correct option in the bracketed action line, then Copy or Download.';
   } else {
     document.getElementById('emailModalTitle').textContent = 'Bonus Abuse — Standard Email Template';
     document.getElementById('emailModalSub').innerHTML = 'Use this template for any bonus abuse case unless told otherwise. Fill in <code>[NAME]</code> and <code>[INSERT AMOUNT]</code> below, then Copy or Download.';
