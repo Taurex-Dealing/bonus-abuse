@@ -325,6 +325,30 @@ td select { cursor: pointer; appearance: auto; }
   text-align: center;
 }
 
+/* ── Jira Ticket cell: editable value stacked above a gold Push-to-Jira button ── */
+.jira-cell { vertical-align: middle; }
+.jira-val {
+  display: block;
+  margin-bottom: 5px;
+  cursor: pointer;
+  border-radius: 4px;
+  word-break: break-word;
+}
+.jira-val:hover { background: rgba(245,197,24,0.06); }
+
+.btn-jira {
+  display: block;
+  width: 100%;
+  background: linear-gradient(135deg, #f5c518, #e8a500);
+  color: #1a0a2e;
+  padding: 5px 6px;
+  font-size: 0.66rem;
+  line-height: 1.2;
+  white-space: normal;
+  font-weight: 700;
+}
+.btn-jira:hover { background: linear-gradient(135deg, #ffd644, #f5c518); transform: translateY(-1px); }
+
 /* ── Status bar ── */
 .status-bar {
   position: fixed;
@@ -549,6 +573,7 @@ td select { cursor: pointer; appearance: auto; }
 var REPO_OWNER = 'Taurex-Dealing';
 var REPO_NAME = 'abuse-tracker';
 var PAT_KEY = 'bonus_abuse_pat';   // localStorage key kept stable so users aren't re-prompted
+var ZAPIER_HOOK_URL = 'https://hooks.zapier.com/hooks/catch/12133102/4b769ps/';  // Catch Hook → Jira (colleague's Zap)
 
 // ── Column catalogue: single source of truth. Each tracker picks a subset. ──
 var ALL_COLUMNS = [
@@ -814,6 +839,36 @@ function deleteRow(id) {
   scheduleSave(t);
 }
 
+// ── Send a row to the Zapier Catch Hook, which creates the Jira ticket. ──
+// Fire-and-forget: Zapier receives the full case object and builds the ticket
+// on its side. We send the whole row plus which tracker it came from so the Zap
+// can branch Bonus vs Market. No writeback here — the ticket key is filled in
+// manually (or by the Zap committing back to data.json) once created.
+async function pushToJira(id) {
+  var t = active();
+  var c = t.cases.find(function(x) { return x.id === id; });
+  if (!c) return;
+  var who = (c.name || c.login || 'this case');
+  if ((c.jira_ticket || '').trim()) {
+    if (!confirm('This row already has a Jira Ticket value (' + c.jira_ticket + ').\nSend it to Jira again anyway?')) return;
+  } else if (!confirm('Send ' + who + ' to Jira?')) {
+    return;
+  }
+  var payload = Object.assign({ tracker: t.key, tracker_label: t.label }, c);
+  try {
+    setStatus('Sending to Jira…', 'saving');
+    var resp = await fetch(ZAPIER_HOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    setStatus('Sent to Jira: ' + who, '');
+  } catch(e) {
+    setStatus('Jira send failed: ' + e.message + ' (check webhook / CORS)', 'error');
+  }
+}
+
 function renderPill(val) {
   if (!val) return '<span class="pill pill-empty">—</span>';
   if (val.toUpperCase() === 'YES') return '<span class="pill pill-yes">YES</span>';
@@ -873,7 +928,16 @@ function renderTable() {
       html += '<tr data-id="' + c.id + '">';
       html += '<td class="row-num">' + (i + 1) + '</td>';
       t.columns.forEach(function(col) {
-        if (col.type === 'dropdown') {
+        if (col.field === 'jira_ticket') {
+          // Jira Ticket cell = editable value (paste the key back here) + a gold
+          // "Push to Jira" button that fires the row at the Zapier hook. The value
+          // span is the edit target, so editing never wipes the button (sibling).
+          var jv = c.jira_ticket ? escapeHtml(c.jira_ticket) : '<span class="pill-empty">&mdash;</span>';
+          html += '<td class="jira-cell">'
+                + '<span class="jira-val" onclick="editCell(this,\'' + c.id + '\',\'jira_ticket\',\'text\')">' + jv + '</span>'
+                + '<button class="btn btn-jira" title="Send this case to Jira" onclick="pushToJira(\'' + c.id + '\')">Push to Jira</button>'
+                + '</td>';
+        } else if (col.type === 'dropdown') {
           html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'' + col.field + '\',\'dropdown\')">' + renderPill(c[col.field]) + '</td>';
         } else {
           html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'' + col.field + '\',\'' + col.type + '\')">' + escapeHtml(c[col.field]) + '</td>';
