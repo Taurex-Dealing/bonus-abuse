@@ -15,7 +15,7 @@
       "close_only": "YES",
       "amount_to_deduct": "6470",
       "email_sent": "YES",
-      "adjusted": "",
+      "adjusted": "YES",
       "funding_release": "",
       "account_closed": ""
     },
