@@ -77,25 +77,6 @@
       "account_closed": ""
     },
     {
-      "id": "1780636515568",
-      "date": "2026-06-05",
-      "cu_number": "CU156222",
-      "login": "2110000159",
-      "name": "ZHEN DONG CHEN",
-      "ib": "n/a",
-      "account_manager": "Nancy Yang",
-      "country": "China",
-      "jira_ticket": "https://zenfinex.atlassian.net/browse/DTS-19686",
-      "withdrawals_blocked": "YES",
-      "crm_note": "YES",
-      "close_only": "YES",
-      "amount_to_deduct": "",
-      "email_sent": "",
-      "adjusted": "",
-      "funding_release": "",
-      "account_closed": ""
-    },
-    {
       "id": "1780636347730",
       "date": "2026-06-05",
       "cu_number": "CU158378",
