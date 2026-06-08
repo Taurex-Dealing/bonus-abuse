@@ -28,7 +28,7 @@
       "ib": "n/a",
       "account_manager": "Nancy Yang",
       "country": "China",
-      "jira_ticket": "",
+      "jira_ticket": "https://zenfinex.atlassian.net/browse/DTS-19686",
       "withdrawals_blocked": "YES",
       "crm_note": "YES",
       "close_only": "YES",
