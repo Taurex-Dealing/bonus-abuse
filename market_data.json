@@ -75,25 +75,6 @@
       "adjusted": "YES",
       "funding_release": "",
       "account_closed": ""
-    },
-    {
-      "id": "1780636347730",
-      "date": "2026-06-05",
-      "cu_number": "CU158378",
-      "login": "2110000323",
-      "name": "YONG FEI ZHU",
-      "ib": "n/a",
-      "account_manager": "Nancy Yang",
-      "country": "China",
-      "jira_ticket": "https://zenfinex.atlassian.net/browse/DTS-19685",
-      "withdrawals_blocked": "YES",
-      "crm_note": "YES",
-      "close_only": "YES",
-      "amount_to_deduct": "",
-      "email_sent": "",
-      "adjusted": "",
-      "funding_release": "",
-      "account_closed": ""
     }
   ]
 }
