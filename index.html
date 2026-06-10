@@ -575,6 +575,99 @@ var REPO_NAME = 'abuse-tracker';
 var PAT_KEY = 'bonus_abuse_pat';   // localStorage key kept stable so users aren't re-prompted
 var ZAPIER_HOOK_URL = 'https://hooks.zapier.com/hooks/catch/12133102/4b769ps/';  // Catch Hook → Jira (colleague's Zap)
 
+// ── Account Manager → Jira user mapping (from Org_Chart_with_Jira_user_mapping.xlsx, Jun 2026).
+// Keys are the canonical org-chart names used for the autosuggest; id/email are the
+// matched Jira user (blank = not in Jira / suspended / invited-not-using).
+var AM_JIRA_MAP = {
+  "Angelos Pieries": { id: "64187c55b05b4e3e7daa2857", email: "apieries@zenfinex.com" },
+  "Thomas Selby": { id: "712020:2ae1efb1-1502-42bc-ac03-97fb8a8de005", email: "tselby@tradetaurex.com" },
+  "Marco Vaccargiu": { id: "712020:8535b338-6019-46bc-8c03-f4c2ff77fdd6", email: "mvaccargiu@tradetaurex.com" },
+  "Roland Kazzi": { id: "62011e411fec260068c0f57c", email: "rkazzi@zenfinex.com" },
+  "Najla Murad": { id: "712020:d0333399-ae2f-47f1-8981-293dc0ebe835", email: "nmurad@tradetaurex.com" },
+  "Muhammad Omer Iqbal": { id: "712020:d6190483-6727-45c6-8ac3-33737366d0f9", email: "miqbal@tradetaurex.com" },
+  "Sarah Saber": { id: "712020:b662bce2-22e0-4e72-9c82-1d3d91632ef1", email: "ssaaber@tradetaurex.com" },
+  "Asmaa Ibrahim Ali": { id: "712020:88641461-0eb4-40fb-bed3-5e4cddc82749", email: "aibrahim@tradetaurex.com" },
+  "MacDonald Mrema": { id: "", email: "" },
+  "Trang Nguyen": { id: "", email: "" },
+  "Miguel Adrian Perez Azmouz": { id: "712020:54c0ccdf-0ce8-4ff6-b422-9e92d0db2153", email: "mperez@tradetaurex.com" },
+  "Hidayat Hassan": { id: "712020:4739a05c-e9ee-4008-a86f-baff544c7224", email: "hhassan@tradetaurex.com" },
+  "Norafiqah Ramli": { id: "712020:cf649348-ab70-4215-90de-539da3856a8a", email: "nramli@tradetaurex.com" },
+  "Syira Zubir": { id: "712020:28b5516b-c09f-4988-9359-908bf88ee5f7", email: "szubir@tradetaurex.com" },
+  "Xian Ho": { id: "712020:98768d97-6770-4ecf-af1b-b044f1cf8168", email: "xho@tradetaurex.com" },
+  "Shant Zerounian": { id: "712020:f854f743-a739-4a4e-aa86-8a908ff9baf8", email: "szerounian@tradetaurex.com" },
+  "Mo Yassin": { id: "712020:4dfcf98e-38db-4af2-b896-244c7d096a35", email: "myassin@tradetaurex.com" },
+  "Mohamed Farouk": { id: "712020:7fe70a15-d72d-47b3-953c-2c9be069f203", email: "mfarouk@tradetaurex.com" },
+  "Ahmed Megahed": { id: "712020:48f9307d-61b0-4a0a-b11e-4c38f719a13f", email: "amegahed@tradetaurex.com" },
+  "Ashraf Rashwan": { id: "712020:83549550-f939-43a4-9bd3-a761eb59fb43", email: "arashwan@tradetaurex.com" },
+  "Hashim Ali": { id: "712020:ffbf0a4b-d0cf-4e71-8f40-b81566b33ec0", email: "hali@tradetaurex.com" },
+  "Rahul Pillai": { id: "712020:4e4f4c5f-b95a-4a76-bb50-3d946b804304", email: "rpillai@tradetaurex.com" },
+  "Ramon Valverde": { id: "712020:e010cd54-d5c5-43fd-83ff-b56f4e9a998d", email: "rvalverde@tradetaurex.com" },
+  "Luis Espinoza": { id: "", email: "" },
+  "Nicolas Velasquez": { id: "712020:ec6788a9-78f6-4ab7-a24e-ae17ac8e0b6c", email: "nvelasquez@tradetaurex.com" },
+  "Arold Rugumbwa": { id: "6411aaf92cee496759ea814d", email: "arugambwa@zenfinex.africa" },
+  "Isata Janneh": { id: "712020:cf66b0c2-08e2-4803-84c7-32d417060731", email: "ijanneh@tradetaurex.com" },
+  "Jeff Zhang": { id: "712020:e7015bea-afac-472f-86b3-e204ab76c9db", email: "jzhangw@tradetaurex.com" },
+  "Aura Sintananoppaqun": { id: "712020:2b3d21f8-6cb4-4f62-ad48-d84d484535a4", email: "asintananoppaqun@tradetaurex.com" },
+  "Birdy Kunraksa": { id: "712020:e7ebd755-9351-4d9c-9efb-f907f584f955", email: "bkunraksa@tradetaurex.com" },
+  "Future Chotdissunthorn": { id: "712020:8afe2187-2eb3-44b8-bc3c-2cd83b45d642", email: "fchotdissunthorn@tradetaurex.com" },
+  "Tree Lasonthi": { id: "712020:bfcff700-f02a-4f6f-9ffb-0ff58c17b0bf", email: "tlasonthi@tradetaurex.com" },
+  "Viet Nguyen": { id: "712020:2d17b707-4621-47ee-a6ac-d72e0db776ca", email: "vnguyen@tradetaurex.com" },
+  "Isabel Ho": { id: "712020:1b68e0d3-0989-4b1b-a4fb-0b394585e805", email: "iho@tradetaurex.com" },
+  "Mike Vinh": { id: "712020:bba4bd9b-4ffd-4257-93bb-8fba820c1f44", email: "mvinh@tradetaurex.com" },
+  "Wayne Wu": { id: "712020:774b9fba-dc76-4be6-a283-dbaa90a91d97", email: "wwu@tradetaurex.com" },
+  "Farizul Yatim": { id: "712020:ff11af6c-479a-40c8-bae1-aa337e663dfd", email: "fyatim@tradetaurex.com" },
+  "Salam Munir": { id: "712020:dc3b1b6f-7c5a-4652-96f9-5cd888bf4b71", email: "smunir@tradetaurex.com" },
+  "Atiqah Khairi": { id: "712020:d6ed78d2-21df-4aed-8354-e86d5d92e8fe", email: "akhairi@tradetaurex.com" },
+  "Norhafizi Mohd Rafek": { id: "712020:ca1dd1b5-5032-409e-96ca-6638b917035f", email: "nmohdrafek@tradetaurex.com" },
+  "Norhidayah Abdullah": { id: "712020:18bd2d37-1d2d-4ad4-a747-0f8cb9e93065", email: "nabdullah@tradetaurex.com" },
+  "Sophia Chin": { id: "712020:20d69b06-15ca-43ed-afc6-6045d974b63b", email: "schin@tradetaurex.com" },
+  "Yaya Ismail": { id: "712020:9710b889-7030-4626-8248-d9c21ea00c85", email: "yismail@tradetaurex.com" },
+  "Allen Wang": { id: "712020:59ba963f-8709-40be-a85e-08185bc158d9", email: "hwong@tradetaurex.com" },
+  "Nancy Yang": { id: "712020:ca93a6e6-9b88-4aea-9236-9b3a52216343", email: "nyang@tradetaurex.com" },
+  "Charlie Shenxiang": { id: "", email: "" },
+  "Kinden Huang": { id: "", email: "" },
+  "Payne Hu": { id: "", email: "" },
+  "Janey Liu": { id: "712020:0441de33-be5e-4549-b3e8-57846636e25d", email: "jliu@tradetaurex.com" },
+  "Bob Zhang": { id: "712020:24afdbbb-ab55-47c7-8a30-d92f766b1073", email: "gzhang@tradetaurex.com" },
+  "John Gao": { id: "", email: "" },
+  "Rita Dia": { id: "712020:48c70508-1c7e-43cf-9bef-ef8ad0a7110a", email: "rdai@tradetaurex.com" },
+  "Wendy Li": { id: "712020:747d9dd0-d7e8-4f4e-bb08-0749492a68a8", email: "wli@tradetaurex.com" },
+  "Finn Cheng": { id: "712020:9d7cbb70-262f-4593-a171-5f20fbf97b11", email: "fcheng@taurexpartners.com" },
+  "Demi Yuan": { id: "", email: "" },
+  "Jason Dai": { id: "", email: "" },
+  "Mark Ma": { id: "", email: "" },
+  "Leo Yan": { id: "", email: "" },
+  "Grace Zhang": { id: "712020:24afdbbb-ab55-47c7-8a30-d92f766b1073", email: "gzhang@tradetaurex.com" },
+  "James Wu": { id: "", email: "" },
+  "William Chen": { id: "712020:76506321-5dea-40f2-944c-9bcb927fd0bf", email: "wchen@taurexpartners.com" },
+  "Victor Huang": { id: "712020:6ba07a47-f325-411c-ad3c-42b00036609e", email: "vhuang@taurexpartners.com" },
+  "Dean Hong": { id: "712020:795e76b9-d340-4db5-9564-e59c8b231d81", email: "dhong@taurexpartners.com" },
+  "Dame Yu": { id: "712020:ae305665-7ac6-49eb-a54c-fa57d99a71e8", email: "dyu@taurexpartners.com" },
+  "John Wu": { id: "712020:c2628514-5578-423f-9741-5160ce3f5d7c", email: "jwu@taurexpartners.com" },
+  "June Chen": { id: "712020:6f018993-9fcc-4db2-bb33-a0a2394d14c0", email: "jchen@taurexpartners.com" },
+  "Yin Zhang": { id: "", email: "" },
+  "Ella Wang": { id: "712020:7778fc56-68f9-44e0-90e5-a978a8416321", email: "ewang@tradetaurex.com" },
+  "Johnson Nan": { id: "712020:b55c81c9-586e-4d51-8eec-2478dd04a9a6", email: "jnan@taurexpartners.com" }
+};
+
+// Native datalist powering the Account Manager autosuggest dropdown.
+(function() {
+  var dl = document.createElement('datalist');
+  dl.id = 'amList';
+  Object.keys(AM_JIRA_MAP).sort().forEach(function(n) {
+    var o = document.createElement('option');
+    o.value = n;
+    dl.appendChild(o);
+  });
+  document.body.appendChild(dl);
+})();
+function amLookup(name) {
+  name = (name || '').trim().toLowerCase();
+  if (!name) return null;
+  var key = Object.keys(AM_JIRA_MAP).find(function(k) { return k.toLowerCase() === name; });
+  return key ? AM_JIRA_MAP[key] : null;
+}
+
 // ── Column catalogue: single source of truth. Each tracker picks a subset. ──
 var ALL_COLUMNS = [
   { field:'date',                label:'Date',             type:'date' },
@@ -856,6 +949,11 @@ async function pushToJira(id) {
     return;
   }
   var payload = Object.assign({ tracker: t.key, tracker_label: t.label }, c);
+  // Attach the mapped Jira user so the Zap can assign/notify the exact account
+  // manager instead of relying on free-typed spelling. Blank if unmapped.
+  var am = amLookup(c.account_manager);
+  payload.account_manager_jira_id = am ? am.id : '';
+  payload.account_manager_jira_email = am ? am.email : '';
   // Send as application/x-www-form-urlencoded (a CORS "simple" request) so the
   // browser SKIPS the preflight OPTIONS the Zapier hook doesn't answer — that
   // preflight is what caused "Failed to fetch". Zapier still parses each key into
@@ -999,6 +1097,7 @@ function editCell(td, id, field, type) {
     inp.type = type === 'date' ? 'date' : (type === 'number' ? 'number' : 'text');
     if (type === 'number') { inp.step = 'any'; }
     inp.value = val;
+    if (field === 'account_manager') inp.setAttribute('list', 'amList');
     td.innerHTML = '';
     td.appendChild(inp);
     inp.focus();
