@@ -21,7 +21,8 @@
       "credit_removed": "YES",
       "adjusted": "YES",
       "funding_release": "YES",
-      "account_closed": "YES"
+      "account_closed": "YES",
+      "abuse_confirmed": ""
     },
     {
       "id": "1780569900533",
@@ -44,7 +45,8 @@
       "credit_removed": "YES",
       "adjusted": "YES",
       "funding_release": "",
-      "account_closed": ""
+      "account_closed": "",
+      "abuse_confirmed": ""
     },
     {
       "id": "1780490268670",
@@ -67,7 +69,8 @@
       "credit_removed": "YES",
       "adjusted": "YES",
       "funding_release": "YES",
-      "account_closed": "YES"
+      "account_closed": "YES",
+      "abuse_confirmed": ""
     },
     {
       "id": "1780488586162",
@@ -90,7 +93,8 @@
       "adjusted": "YES",
       "funding_release": "YES",
       "account_closed": "YES",
-      "crm_note": "YES"
+      "crm_note": "YES",
+      "abuse_confirmed": ""
     },
     {
       "id": "1780479347617",
