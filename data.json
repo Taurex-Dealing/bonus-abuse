@@ -278,7 +278,7 @@
       "adjusted": "YES",
       "funding_release": "YES",
       "account_closed": "YES",
-      "account_manager": "s",
+      "account_manager": "",
       "close_only": "",
       "amount_to_deduct": "",
       "email_sent": "YES",
