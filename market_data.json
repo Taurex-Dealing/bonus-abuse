@@ -89,7 +89,7 @@
       "withdrawals_blocked": "YES",
       "crm_note": "YES",
       "close_only": "YES",
-      "amount_to_deduct": "",
+      "amount_to_deduct": "5933.86",
       "email_sent": "",
       "adjusted": "",
       "funding_release": "",
