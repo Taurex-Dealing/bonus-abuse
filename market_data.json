@@ -47,7 +47,7 @@
       "ib": "161256",
       "account_manager": "Charlie Shengxiang",
       "country": "China",
-      "jira_ticket": "",
+      "jira_ticket": "https://zenfinex.atlassian.net/browse/DTS-19798",
       "withdrawals_blocked": "YES",
       "crm_note": "YES",
       "close_only": "YES",
