@@ -28,7 +28,7 @@
       "ib": "83980",
       "account_manager": "John Gao",
       "country": "China",
-      "jira_ticket": "",
+      "jira_ticket": "https://zenfinex.atlassian.net/browse/DTS-19797",
       "withdrawals_blocked": "YES",
       "crm_note": "YES",
       "close_only": "YES",
