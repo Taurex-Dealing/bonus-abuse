@@ -348,6 +348,12 @@ td select { cursor: pointer; appearance: auto; }
   font-weight: 700;
 }
 .btn-jira:hover { background: linear-gradient(135deg, #ffd644, #f5c518); transform: translateY(-1px); }
+.btn-jira.pushed {
+  background: rgba(255,255,255,0.10);
+  color: rgba(255,255,255,0.45);
+  cursor: default;
+}
+.btn-jira.pushed:hover { background: rgba(255,255,255,0.10); transform: none; }
 
 /* ── Status bar ── */
 .status-bar {
@@ -945,6 +951,8 @@ async function pushToJira(id) {
   var who = (c.name || c.login || 'this case');
   if ((c.jira_ticket || '').trim()) {
     if (!confirm('This row already has a Jira Ticket value (' + c.jira_ticket + ').\nSend it to Jira again anyway?')) return;
+  } else if (c.jira_pushed === 'YES') {
+    if (!confirm(who + ' has already been pushed to Jira.\nSend it again anyway?')) return;
   } else if (!confirm('Send ' + who + ' to Jira?')) {
     return;
   }
@@ -965,6 +973,10 @@ async function pushToJira(id) {
     var resp = await fetch(ZAPIER_HOOK_URL, { method: 'POST', body: form });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     setStatus('Sent to Jira: ' + who, '');
+    // Persist the pushed flag so the button stays greyed for everyone, on every reload.
+    c.jira_pushed = 'YES';
+    renderTable();
+    scheduleSave(t);
   } catch(e) {
     setStatus('Jira send failed: ' + e.message + ' (check webhook / CORS)', 'error');
   }
@@ -1035,7 +1047,11 @@ function renderTable() {
       t.columns.forEach(function(col) {
         if (col.type === 'action') {
           // Dedicated "Push to Jira" column — gold button fires the whole row at the Zapier hook.
-          html += '<td class="jira-cell"><button class="btn btn-jira" title="Send this case to Jira" onclick="pushToJira(\'' + c.id + '\')">Push to Jira</button></td>';
+          if (c.jira_pushed === 'YES') {
+            html += '<td class="jira-cell"><button class="btn btn-jira pushed" title="Already sent to Jira — click to send again" onclick="pushToJira(\'' + c.id + '\')">Jira Pushed</button></td>';
+          } else {
+            html += '<td class="jira-cell"><button class="btn btn-jira" title="Send this case to Jira" onclick="pushToJira(\'' + c.id + '\')">Push to Jira</button></td>';
+          }
         } else if (col.type === 'dropdown') {
           html += '<td class="editable" onclick="editCell(this,\'' + c.id + '\',\'' + col.field + '\',\'dropdown\')">' + renderPill(c[col.field]) + '</td>';
         } else {
