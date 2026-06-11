@@ -1,27 +1,6 @@
 {
   "cases": [
     {
-      "id": "1781180571189",
-      "date": "2026-06-11",
-      "cu_number": "",
-      "login": "",
-      "name": "seantest3",
-      "ib": "",
-      "account_manager": "",
-      "country": "china",
-      "jira_ticket": "",
-      "withdrawals_blocked": "",
-      "crm_note": "",
-      "close_only": "",
-      "amount_to_deduct": "",
-      "email_sent": "",
-      "credit_removed": "",
-      "adjusted": "",
-      "funding_release": "",
-      "account_closed": "",
-      "jira_pushed": "YES"
-    },
-    {
       "id": "1781083837817",
       "date": "2026-06-10",
       "cu_number": "CU161437",
