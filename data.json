@@ -15,7 +15,7 @@
       "close_only": "YES",
       "amount_to_deduct": "133.60",
       "email_sent": "YES",
-      "credit_removed": "",
+      "credit_removed": "YES",
       "adjusted": "",
       "funding_release": "",
       "account_closed": "",
