@@ -16,7 +16,7 @@
       "amount_to_deduct": "133.60",
       "email_sent": "YES",
       "credit_removed": "YES",
-      "adjusted": "",
+      "adjusted": "YES",
       "funding_release": "",
       "account_closed": "",
       "bonus_tcs": ""
